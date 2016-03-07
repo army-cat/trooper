@@ -1,0 +1,14 @@
+{application, trooper, [
+    {description, "Trooper is an Automation Basic Tool"},
+    {vsn, git},
+    {registered, []},
+    {applications, [
+        kernel,
+        stdlib,
+        asn1,
+        public_key,
+        crypto,
+        ssh
+    ]},
+    {env, []}
+]}.
