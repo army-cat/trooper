@@ -17,11 +17,15 @@ Trooper requires to be run over an Erlang/OTP 17+.
 {ok,<<"-----BEGIN RSA PRIVATE KEY-----\nMIIE"...>>}
 2> {ok,Trooper} = trooper_ssh:start([{host, "trooper.com"},
                                      {user, "trooper"},
-                                     {id_rsa, File}]).
+                                     {id_rsa, File}]), ok.
+ok
 3> trooper_ssh:exec(Trooper, "ls -lha").
 {ok,0,
     <<"total 128K\ndrwxr-xr-x 10 trooper trooper 4.0K Mar  8 16:54"...>>}
-12> trooper_ssh:stop(Trooper).
+4> trooper_ssh:exec(Trooper, "ls not_found").
+{ok,2,
+    <<"ls: cannot access not_found: No such file or directory\n">>}
+5> trooper_ssh:stop(Trooper).
 ok]]></pre>
 
 
