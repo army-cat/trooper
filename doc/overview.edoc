@@ -1,0 +1,28 @@
+@author "Manuel Rubio <manuel@altenwald.com>"
+@copyright 2016 Altenwald Solutions, S.L.
+@title Trooper
+
+@doc
+<a href='https://raw.githubusercontent.com/altenwald/trooper/master/COPYING'><img src='https://img.shields.io/github/license/altenwald/trooper.svg' alt='License: LGPL 2.1'/></a>
+
+Trooper is a soldier in charge to go to other machines (via SSH) and follow your commands.
+
+== Requirements ==
+
+Trooper requires to be run over an Erlang/OTP 17+.
+
+== Example ==
+
+<pre lang="erlang"><![CDATA[1> {ok, File} = file:read_file("/home/trooper/.ssh/id_rsa").
+{ok,<<"-----BEGIN RSA PRIVATE KEY-----\nMIIE"...>>}
+2> {ok,Trooper} = trooper_ssh:start([{host, "trooper.com"},
+                                     {user, "trooper"},
+                                     {id_rsa, File}]).
+3> trooper_ssh:exec(Trooper, "ls -lha").
+{ok,0,
+    <<"total 128K\ndrwxr-xr-x 10 trooper trooper 4.0K Mar  8 16:54"...>>}
+12> trooper_ssh:stop(Trooper).
+ok]]></pre>
+
+
+Enjoy!
