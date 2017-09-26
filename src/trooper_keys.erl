@@ -51,14 +51,13 @@ decode_ssh_cert(Pem, Password) ->
         [Entry] when Password =/= ignore ->
             public_key:pem_entry_decode(Entry, Password);
         _ ->
-            throw("No pass phrase provided for private key file")
+            {error, "No pass phrase provided for private key file"}
     end.
 
 decode(Certificate, Password) ->
-    try {ok, decode_ssh_cert(Certificate, Password)}
+    try
+        {ok, decode_ssh_cert(Certificate, Password)}
     catch
-        throw:Reason ->
-            {error, Reason};
         error:Reason ->
             {error, Reason}
     end.

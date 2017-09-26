@@ -10,7 +10,9 @@
     start/1,
     stop/1,
     exec/2,
-    exec/3
+    exec/3,
+    exec_long_polling/2,
+    exec_long_polling/3
 ]).
 
 -include("trooper.hrl").
@@ -53,13 +55,28 @@ add_opt(Name, Opts) ->
 stop(#trooper_ssh{pid=Conn}) ->
     ssh:close(Conn).
 
+exec_long_polling(TrooperSSH, CommandFormat, Args) ->
+    Command = io_lib:format(CommandFormat, Args),
+    exec_long_polling(TrooperSSH, Command).
+
 exec(TrooperSSH, CommandFormat, Args) ->
     Command = io_lib:format(CommandFormat, Args),
     exec(TrooperSSH, Command).
 
+exec_long_polling(#trooper_ssh{pid=Conn}, Command) ->
+    Parent = self(),
+    spawn_link(fun() ->
+        {ok, Chan} = ssh_connection:session_channel(Conn, ?CHANNEL_TIMEOUT),
+        case ssh_connection:exec(Conn, Chan, Command, ?COMMAND_TIMEOUT) of
+            success ->
+                get_and_send_all_info(Parent, Conn, Chan);
+            Error ->
+                Error
+        end
+    end).
+
 exec(#trooper_ssh{pid=Conn}, Command) ->
     {ok, Chan} = ssh_connection:session_channel(Conn, ?CHANNEL_TIMEOUT),
-    clean_output(),
     case ssh_connection:exec(Conn, Chan, Command, ?COMMAND_TIMEOUT) of
         success ->
             get_all_info(Chan, <<>>, 0);
@@ -67,41 +84,46 @@ exec(#trooper_ssh{pid=Conn}, Command) ->
             Error
     end.
 
-clean_output() ->
+get_and_send_all_info(PID, Conn, Chan) ->
     receive
-        {ssh_cm, _PID, _Data} ->
-            clean_output()
-    after 0 ->
-        ok
+        {send, Data} ->
+            ssh_connection:send(Conn, Chan, Data),
+            get_and_send_all_info(PID, Conn, Chan);
+        {ssh_cm, _PID, {data, Chan, _Type, Data}} ->
+            PID ! {continue, Data},
+            get_and_send_all_info(PID, Conn, Chan);
+        {ssh_cm, _PID, {eof, Chan}} ->
+            get_and_send_all_info(PID, Conn, Chan);
+        {ssh_cm, _PID, {exit_status, Chan, ExitStatus}} ->
+            PID ! {exit_status, ExitStatus},
+            get_and_send_all_info(PID, Conn, Chan);
+        {ssh_cm, _PID, {closed, Chan}} ->
+            PID ! closed;
+        stop ->
+            PID ! stopped,
+            ssh_connection:close(Conn, Chan);
+        _DroppingMsg ->
+            get_and_send_all_info(PID, Conn, Chan)
+    after ?COMMAND_TIMEOUT ->
+        PID ! {error, etimeout}
     end.
 
 get_all_info(Chan, Received, ExitStatus) ->
     receive
-        {ssh_cm, _PID, Data} ->
-            case handle_msg(Chan, Data) of
-                {continue, Chunk} ->
-                    NewReceived = <<Received/binary, Chunk/binary>>,
-                    get_all_info(Chan, NewReceived, ExitStatus);
-                {exit_status, NewExitStatus} ->
-                    get_all_info(Chan, Received, NewExitStatus);
-                returns ->
-                    {ok, ExitStatus, Received}
-            end
+        {ssh_cm, _PID, {data, Chan, _Type, Chunk}} ->
+            NewReceived = <<Received/binary, Chunk/binary>>,
+            get_all_info(Chan, NewReceived, ExitStatus);
+        {ssh_cm, _PID, {eof, Chan}} ->
+            get_all_info(Chan, Received, ExitStatus);
+        {ssh_cm, _PID, {exit_status, Chan, NewExitStatus}} ->
+            get_all_info(Chan, Received, NewExitStatus);
+        {ssh_cm, _PID, {closed, Chan}} ->
+            {ok, ExitStatus, Received};
+        _DroppingMsg ->
+            get_all_info(Chan, Received, ExitStatus)
     after ?COMMAND_TIMEOUT ->
         case Received of
             <<>> -> {error, etimeout};
             _ -> {error, {incomplete, Received}}
         end
     end.
-
-handle_msg(Chan, {data, Chan, _Type, Data}) ->
-    {continue, Data};
-
-handle_msg(Chan, {exit_status, Chan, ExitStatus}) ->
-    {exit_status, ExitStatus};
-
-handle_msg(Chan, {eof, Chan}) ->
-    {continue, <<>>};
-
-handle_msg(Chan, {closed, Chan}) ->
-    returns.
