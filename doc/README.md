@@ -2,7 +2,7 @@
 
 # Trooper #
 
-Copyright (c) 2016 Altenwald Solutions, S.L.
+Copyright (c) 2016-2017 Altenwald Solutions, S.L.
 
 __Authors:__ "Manuel Rubio ([`manuel@altenwald.com`](mailto:manuel@altenwald.com)).
 
@@ -42,5 +42,6 @@ Enjoy!
 
 <table width="100%" border="0" summary="list of modules">
 <tr><td><a href="trooper_keys.md" class="module">trooper_keys</a></td></tr>
+<tr><td><a href="trooper_proxy.md" class="module">trooper_proxy</a></td></tr>
 <tr><td><a href="trooper_ssh.md" class="module">trooper_ssh</a></td></tr></table>
 
