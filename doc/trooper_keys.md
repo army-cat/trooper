@@ -26,18 +26,20 @@ We can configure this in diferent ways:
        % config for inline certificate (without password)
        {id_rsa, <<"-----BEGIN RSA PRIVATE KEY-----\nMIIE..."},
        % or from a file
-       {file, "id_rsa"},
+       {id_rsa, {file, "id_rsa"}},
        % and adding a password:
        {rsa_pass_phrase, <<"mypass">>},
 ```
 
-You can do that with `rsa`, `dsa` and `ecdsa` algorithms.<a name="index"></a>
+You can do that with `rsa`, `dsa` and `ecdsa` algorithms. Keep in
+mind the `ecdsa` algorithm uses the `dsa_pass_phrase` configuration
+for the password.<a name="index"></a>
 
 ## Function Index ##
 
 
-<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#add_host_key-3">add_host_key/3</a></td><td>adds a trusted host key.</td></tr><tr><td valign="top"><a href="#is_host_key-4">is_host_key/4</a></td><td>is a trusted host key? The answer is always yes (true) for this
-implementation.</td></tr><tr><td valign="top"><a href="#user_key-2">user_key/2</a></td><td>fetch the user public key.</td></tr></table>
+<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#add_host_key-3">add_host_key/3</a></td><td>adds a trusted host key.</td></tr><tr><td valign="top"><a href="#is_host_key-4">is_host_key/4</a></td><td>Is a trusted host key? The answer is always no (false) to force to the
+system to use add_host_key/3.</td></tr><tr><td valign="top"><a href="#user_key-2">user_key/2</a></td><td>fetch the user public key.</td></tr></table>
 
 
 <a name="functions"></a>
@@ -53,8 +55,8 @@ add_host_key(HostNames::string(), Key::<a href="ssh_client_key_api.md#type-publi
 </code></pre>
 <br />
 
-adds a trusted host key. In this implementation the addition is not done
-because all of the hosts are intented to be accepted.
+adds a trusted host key. In this implementation the addition is not
+done because all of the hosts are intented to be accepted.
 
 <a name="is_host_key-4"></a>
 
@@ -65,8 +67,8 @@ is_host_key(Key::<a href="ssh_client_key_api.md#type-public_key">ssh_client_key_
 </code></pre>
 <br />
 
-is a trusted host key? The answer is always yes (true) for this
-implementation.
+Is a trusted host key? The answer is always no (false) to force to the
+system to use add_host_key/3.
 
 <a name="user_key-2"></a>
 
