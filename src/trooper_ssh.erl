@@ -73,8 +73,7 @@ start(Opts) ->
     ] ++
         add_opt(password, Opts) ++
         add_opt(rsa_pass_phrase, Opts) ++
-        add_opt(dsa_pass_phrase, Opts) ++
-        add_opt(ecdsa_pass_phrase, Opts),
+        add_opt(dsa_pass_phrase, Opts),
     ConnOpts = [{key_cb, {trooper_keys, OtherOpts ++ Options}}|Options],
     case ssh:connect(Host, Port, ConnOpts, ?CONNECT_TIMEOUT) of
         {ok, PID} when is_pid(PID) ->

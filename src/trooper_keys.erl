@@ -12,12 +12,14 @@
 %%      % config for inline certificate (without password)
 %%      {id_rsa, <<"-----BEGIN RSA PRIVATE KEY-----\nMIIE..."},
 %%      % or from a file
-%%      {file, "id_rsa"},
+%%      {id_rsa, {file, "id_rsa"}},
 %%      % and adding a password:
 %%      {rsa_pass_phrase, <<"mypass">>},
 %%      ]]></pre>
 %%
-%%      You can do that with `rsa', `dsa' and `ecdsa' algorithms.
+%%      You can do that with `rsa', `dsa' and `ecdsa' algorithms. Keep in
+%%      mind the `ecdsa' algorithm uses the `dsa_pass_phrase' configuration
+%%      for the password.
 %% @end
 -module(trooper_keys).
 -author('manuel@altenwald.com').
@@ -34,8 +36,8 @@
 
 -spec add_host_key(string(), ssh_client_key_api:public_key(),
                    [proplists:property()]) -> ok.
-%% @doc adds a trusted host key. In this implementation the addition is not done
-%%      because all of the hosts are intented to be accepted.
+%% @doc adds a trusted host key. In this implementation the addition is not
+%%      done because all of the hosts are intented to be accepted.
 %% @end
 add_host_key(_HostNames, _Key, _ConnectOptions) -> ok.
 
@@ -43,10 +45,10 @@ add_host_key(_HostNames, _Key, _ConnectOptions) -> ok.
 -spec is_host_key(ssh_client_key_api:public_key(), Host :: string(),
                   ssh_client_key_api:public_key_algorithm(),
                   [proplists:property()]) -> true.
-%% @doc is a trusted host key? The answer is always yes (true) for this
-%%      implementation.
+%% @doc Is a trusted host key? The answer is always no (false) to force to the
+%%      system to use add_host_key/3.
 %% @end
-is_host_key(_Key, _Host, _Algorithm, _ConnectOptions) -> true.
+is_host_key(_Key, _Host, _Algorithm, _ConnectOptions) -> false.
 
 
 -spec user_key(ssh_client_key_api:public_key_algorithm(),
@@ -92,7 +94,7 @@ get_algo(_) -> id_ecdsa.
 %% @private
 get_algo_pass(id_rsa) -> rsa_pass_phrase;
 get_algo_pass(id_dsa) -> dsa_pass_phrase;
-get_algo_pass(id_ecdsa) -> ecdsa_pass_phrase.
+get_algo_pass(id_ecdsa) -> dsa_pass_phrase.
 
 
 -spec decode_ssh_cert(binary(), binary() | string()) -> binary().
@@ -105,9 +107,10 @@ decode_ssh_cert(Pem, Password) ->
         [Entry] when Password =/= ignore ->
             public_key:pem_entry_decode(Entry, Password);
         _ ->
-            {error, "No pass phrase provided for private key file"}
+            throw("No pass phrase provided for private key file")
     end.
 
+-type reason() :: atom() | string().
 
 -spec decode(binary(), binary() | string()) ->
       {ok, binary()} | {error, reason()}.
@@ -117,6 +120,8 @@ decode(Certificate, Password) ->
     try
         {ok, decode_ssh_cert(Certificate, Password)}
     catch
+        throw:Reason ->
+            {error, Reason};
         error:Reason ->
             {error, Reason}
     end.
