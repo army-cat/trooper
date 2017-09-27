@@ -19,6 +19,7 @@ start_daemon() ->
 stop_daemon(Sshd) ->
     ok = ssh:stop_listener(Sshd),
     ok = ssh:stop_daemon(Sshd),
+    ok = ssh:stop(),
     ok.
 
 rsa_user_connect_test() ->
