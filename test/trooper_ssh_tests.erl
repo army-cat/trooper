@@ -4,7 +4,7 @@
 -include_lib("eunit/include/eunit.hrl").
 
 -define(USERNAME, "manuel.rubio").
--define(BASE_PATH, "../test").
+-define(BASE_PATH, "_build/test/lib/trooper/test").
 
 start_daemon() ->
     ok = ssh:start(),

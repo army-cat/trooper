@@ -6,20 +6,20 @@
 -define(USERNAME, "manuel.rubio").
 -define(BASE_PATH, "../test").
 
-start_daemon(N) ->
-    ok = ssh:start(),
-    Opts = [
-        {system_dir, ?BASE_PATH "/daemon" ++ N},
-        {user_dir, ?BASE_PATH "/user"}
-    ],
-    {ok, Sshd} = ssh:daemon(0, Opts),
-    {ok, [{port, Port}]} = ssh:daemon_info(Sshd),
-    {ok, Sshd, Port}.
+% start_daemon(N) ->
+%     ok = ssh:start(),
+%     Opts = [
+%         {system_dir, ?BASE_PATH "/daemon" ++ N},
+%         {user_dir, ?BASE_PATH "/user"}
+%     ],
+%     {ok, Sshd} = ssh:daemon(0, Opts),
+%     {ok, [{port, Port}]} = ssh:daemon_info(Sshd),
+%     {ok, Sshd, Port}.
 
-stop_daemon(Sshd) ->
-    ok = ssh:stop_listener(Sshd),
-    ok = ssh:stop_daemon(Sshd),
-    ok.
+% stop_daemon(Sshd) ->
+%     ok = ssh:stop_listener(Sshd),
+%     ok = ssh:stop_daemon(Sshd),
+%     ok.
 
 %% the command "nc" is not possible to be used with Erlang SSH Server
 %% we have to configure real SSH servers to perform this test.
