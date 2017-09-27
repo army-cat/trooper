@@ -15,7 +15,7 @@ Trooper is a soldier in charge to go to other machines (via SSH) and follow your
 
 ### <a name="Requirements">Requirements</a> ###
 
-Trooper requires to be run over an Erlang/OTP 17+.
+Trooper requires to be run over an Erlang/OTP 19+.
 
 | Erlang Version | Support | Notes |
 |:---|:---:|:---|
@@ -24,17 +24,6 @@ Trooper requires to be run over an Erlang/OTP 17+.
 | 19.2 | :heavy_check_mark: | |
 | 19.1 | :heavy_check_mark: | |
 | 19.0 | :heavy_check_mark: | |
-| 18.3 | :heavy_check_mark: | Recommended if you use OTP 18 |
-| 18.2.1 | :heavy_check_mark: | |
-| 18.2 | :heavy_check_mark: | |
-| 18.1 | :heavy_check_mark: | |
-| 18.0 | :heavy_check_mark: | |
-| 17.5 | :heavy_check_mark: | Recommended if you use OTP 17 |
-| 17.4 | :heavy_check_mark: | |
-| 17.3 | :x: | fail in SSL |
-| 17.2 | :x: | no tests available in Travis-CI |
-| 17.1 | :heavy_check_mark: | |
-| 17.0 | :heavy_check_mark: | |
 
 
 ### <a name="Example">Example</a> ###
