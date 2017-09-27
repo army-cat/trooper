@@ -13,7 +13,7 @@ start_daemon() ->
         {user_dir, ?BASE_PATH "/user"}
     ],
     {ok, Sshd} = ssh:daemon(0, Opts),
-    {ok, [{port, Port}]} = ssh:daemon_info(Sshd),
+    {ok, [{port, Port}|_]} = ssh:daemon_info(Sshd),
     {ok, Sshd, Port}.
 
 stop_daemon(Sshd) ->
