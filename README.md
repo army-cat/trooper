@@ -9,6 +9,7 @@ __Authors:__ "Manuel Rubio ([`manuel@altenwald.com`](mailto:manuel@altenwald.com
 [![Build Status](https://img.shields.io/travis/altenwald/trooper/master.svg)](https://travis-ci.org/altenwald/trooper)
 [![Codecov](https://img.shields.io/codecov/c/github/altenwald/trooper.svg)](https://codecov.io/gh/altenwald/trooper)
 [![License: LGPL 2.1](https://img.shields.io/github/license/altenwald/trooper.svg)](https://raw.githubusercontent.com/altenwald/trooper/master/COPYING)
+[![Hex](https://img.shields.io/hexpm/v/trooper.svg)](https://hex.pm/packages/trooper)
 
 Trooper is a soldier in charge to go to other machines (via SSH) and follow your commands.
 
