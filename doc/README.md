@@ -20,7 +20,8 @@ Trooper requires to be run over an Erlang/OTP 19+.
 
 | Erlang Version | Support | Notes |
 |:---|:---:|:---|
-| 20.0 | :heavy_check_mark: | Recommended if you use OTP 20 |
+| 20.1 | :heavy_check_mark: | Recommended if you use OTP 20 |
+| 20.0 | :heavy_check_mark: | |
 | 19.3 | :heavy_check_mark: | Recommended if you use OTP 19 |
 | 19.2 | :heavy_check_mark: | |
 | 19.1 | :heavy_check_mark: | |
