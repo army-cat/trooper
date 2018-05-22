@@ -35,6 +35,8 @@
 
 -export([
     start/1,
+    start_link/1,
+    get_pid/1,
     stop/1,
     exec/2,
     exec/3,
@@ -55,7 +57,7 @@
 
 -export_type([trooper_ssh/0, opts/0]).
 
--spec start(opts()) -> {ok, trooper_ssh()}.
+-spec start(opts()) -> {ok, trooper_ssh()} | {error, reason()}.
 %% @doc starts the SSH connection given the parameters.
 start(Opts) ->
     Host = proplists:get_value(host, Opts, undefined),
@@ -74,7 +76,10 @@ start(Opts) ->
         add_opt(password, Opts) ++
         add_opt(rsa_pass_phrase, Opts) ++
         add_opt(dsa_pass_phrase, Opts),
-    ConnOpts = [{key_cb, {trooper_keys, OtherOpts ++ Options}}|Options],
+    ConnOpts = case have_certificate(OtherOpts) of
+        true -> [{key_cb, {trooper_keys, OtherOpts ++ Options}}|Options];
+        false -> Options
+    end,
     case ssh:connect(Host, Port, ConnOpts, ?CONNECT_TIMEOUT) of
         {ok, PID} when is_pid(PID) ->
             {ok, #trooper_ssh{
@@ -84,6 +89,33 @@ start(Opts) ->
         {error, Reason} ->
             {error, Reason}
     end.
+
+
+-spec start_link(opts()) -> {ok, trooper_ssh()} | {error, reason()}.
+%% @doc starts the SSH connection given the parameters.
+start_link(Opts) ->
+    case start(Opts) of
+        {ok, Trooper} ->
+            link(get_pid(Trooper)),
+            {ok, Trooper};
+        Error ->
+            Error
+    end.
+
+
+-spec get_pid(trooper_ssh()) -> pid().
+%% @doc retrieves the PID from a trooper_ssh type data.
+get_pid(#trooper_ssh{pid = PID}) ->
+    PID.
+
+
+-spec have_certificate(opts()) -> boolean().
+%% @doc check if it's needed to use trooper_keys or not.
+%% @private
+have_certificate(Options) ->
+    CertOpts = [rsa_pass_phrase, dsa_pass_phrase,
+                id_ecdsa, id_rsa, id_dsa],
+    lists:any(fun({Key, _}) -> lists:member(Key, CertOpts) end, Options).
 
 
 -spec add_opt(opt_key(), opts()) -> opts().

@@ -23,31 +23,46 @@
 -author('manuel@altenwald.com').
 -compile([warnings_as_errors]).
 
--export([start/1]).
+-export([
+    start/1,
+    stop/1,
+    exec/2,
+    exec/3,
+    exec_long_polling/2,
+    exec_long_polling/3
+]).
 
--define(COMMAND_TIMEOUT, 60000).
 -define(LISTENING_TIMEOUT, 1000).
 -define(LOCAL_IP, "127.0.0.1").
 
+-record(trooper_proxy, {
+    supervisor :: pid(),
+    supervisor_ref :: reference(),
+    trooper_ssh :: trooper_ssh:trooper_ssh()
+}).
 
--spec start([trooper_ssh:opts()]) -> {ok, trooper_ssh:trooper_ssh()}.
+-opaque trooper_proxy() :: #trooper_proxy{}.
+
+-export_type([trooper_proxy/0]).
+
+-spec start([trooper_ssh:opts()]) -> {ok, trooper_proxy()}.
 %% @doc starts the proxy connections to the remote servers.
-start([Config1,Config2|Configs]) ->
+start(Configs) ->
+    Ref = make_ref(),
+    {ok, PID} = trooper_proxy_sup:start(Ref),
+    start(Configs, #trooper_proxy{supervisor = PID,
+                                  supervisor_ref = Ref}).
+
+
+-spec start([trooper_ssh:opts()], [pid()]) -> {ok, trooper_proxy()}.
+%% @private
+start([Config1,Config2|Configs], #trooper_proxy{supervisor = Sup} = TProxy) ->
     Cmd = proplists:get_value(proxy, Config1, "nc ~s ~b"),
     Host = proplists:get_value(host, Config2, undefined),
     Port = proplists:get_value(port, Config2, 22),
     NewConfig = proplists:delete(proxy, Config1),
-    {ok, Trooper} = trooper_ssh:start(NewConfig),
-    Parent = self(),
-    spawn(fun() ->
-        PID = trooper_ssh:exec_long_polling(Trooper, Cmd, [Host, Port]),
-        {ok, LSocket} = gen_tcp:listen(0, [binary, {active, true}]),
-        {ok, LocalPort} = inet:port(LSocket),
-        Parent ! {port, LocalPort},
-        {ok, Socket} = gen_tcp:accept(LSocket),
-        processing(PID, Socket),
-        gen_tcp:close(LSocket)
-    end),
+    From = self(),
+    trooper_proxy_sup:start_child(Sup, [From, NewConfig, Cmd, Host, Port]),
     LocalPort = receive
         {port, LPort} -> LPort
     after
@@ -56,33 +71,61 @@ start([Config1,Config2|Configs]) ->
     C0 = proplists:delete(host, Config2),
     C1 = proplists:delete(port, C0),
     NewConfig2 = [{host, ?LOCAL_IP}, {port, LocalPort}|C1],
-    start([NewConfig2|Configs]);
+    start([NewConfig2|Configs], TProxy);
 
-start([Config]) ->
-    {ok, _Trooper} = trooper_ssh:start(Config).
-
-
--spec processing(pid(), gen_tcp:socket()) -> ok.
-%% @doc this function is in charge of handling the proxy information. Everything
-%%      coming from SSH is sent to the TCP connection and everything from the
-%%      TCP connection is sent back to the SSH connection.
-%% @private
-processing(PID, Socket) ->
-    receive
-        {tcp, Socket, Data} ->
-            PID ! {send, Data},
-            processing(PID, Socket);
-        {tcp_closed, Socket} ->
-            PID ! stop,
-            ok = gen_tcp:close(Socket);
-        {continue, Data} ->
-            gen_tcp:send(Socket, Data),
-            processing(PID, Socket);
-        {exit_status, _} ->
-            processing(PID, Socket);
-        _Error ->
-            ok = gen_tcp:close(Socket)
+start([Config], #trooper_proxy{supervisor = Sup} = TProxy) ->
+    trooper_proxy_sup:start_child(Sup, [self(), Config]),
+    Trooper = receive
+        {trooper, T} -> T
     after
-        ?COMMAND_TIMEOUT ->
-            ok = gen_tcp:close(Socket)
-    end.
+        ?LISTENING_TIMEOUT -> throw({error, Config})
+    end,
+    {ok, TProxy#trooper_proxy{trooper_ssh = Trooper}}.
+
+
+-spec stop(trooper_proxy()) -> ok.
+%% @doc stops the SSH proxy connection.
+stop(#trooper_proxy{supervisor_ref = Ref}) ->
+    supervisor:terminate_child(trooper_app, Ref).
+
+
+-spec exec_long_polling(trooper_proxy(), CommandFormat :: string(),
+                        Args :: [term()]) -> pid().
+%% @doc executes the command in background setting the current process as the
+%%      receiver for the incoming information from the SSH connection.
+%%      This function let us to use the format and args way to create the
+%%      command to be execute in the remote server.
+%% @end
+exec_long_polling(#trooper_proxy{trooper_ssh = TrooperSSH}, Cmd, Args) ->
+    trooper_ssh:exec_long_polling(TrooperSSH, Cmd, Args).
+
+
+-type exit_status() :: integer().
+-type reason() :: atom() | string().
+
+-spec exec(trooper_proxy(), CommandFormat :: string(), Args :: [term()]) ->
+      {ok, exit_status(), binary()} | {error, reason()}.
+%% @doc executes the command in background setting the current process as the
+%%      receiver for the incoming information from the SSH connection.
+%%      This function let us to use the format and args way to create the
+%%      command to be execute in the remote server.
+%% @end
+exec(#trooper_proxy{trooper_ssh = TrooperSSH}, CommandFormat, Args) ->
+    trooper_ssh:exec(TrooperSSH, CommandFormat, Args).
+
+
+-spec exec_long_polling(trooper_proxy(), Command :: string()) -> pid().
+%% @doc executes the command in background setting the current process as the
+%%      receiver for the incoming information from the SSH connection.
+%% @end
+exec_long_polling(#trooper_proxy{trooper_ssh = TrooperSSH}, Command) ->
+    trooper_ssh:exec_long_polling(TrooperSSH, Command).
+
+
+-spec exec(trooper_proxy(), Command :: string()) ->
+      {ok, exit_status(), binary()} | {error, reason()}.
+%% @doc executes the command in background setting the current process as the
+%%      receiver for the incoming information from the SSH connection.
+%% @end
+exec(#trooper_proxy{trooper_ssh = TrooperSSH}, Command) ->
+    trooper_ssh:exec(TrooperSSH, Command).

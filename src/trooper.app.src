@@ -10,6 +10,7 @@
         crypto,
         ssh
     ]},
+    {mod, {trooper_app, []}},
     {env, []},
     {maintainers, ["Manuel Rubio"]},
     {licenses, ["LGPL 2.1"]},
