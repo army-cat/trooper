@@ -57,7 +57,7 @@ start(Configs) ->
 -spec start([trooper_ssh:opts()], [pid()]) -> {ok, trooper_proxy()}.
 %% @private
 start([Config1,Config2|Configs], #trooper_proxy{supervisor = Sup} = TProxy) ->
-    Cmd = proplists:get_value(proxy, Config1, "nc ~s ~b"),
+    Cmd = proplists:get_value(proxy, Config1, "nc -w 60 ~s ~b"),
     Host = proplists:get_value(host, Config2, undefined),
     Port = proplists:get_value(port, Config2, 22),
     NewConfig = proplists:delete(proxy, Config1),
