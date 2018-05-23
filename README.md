@@ -20,7 +20,9 @@ Trooper requires to be run over an Erlang/OTP 19+.
 
 | Erlang Version | Support | Notes |
 |:---|:---:|:---|
-| 20.1 | :heavy_check_mark: | Recommended if you use OTP 20 |
+| 20.3 | :heavy_check_mark: | Recommended if you use OTP 20 |
+| 20.2 | :heavy_check_mark: | |
+| 20.1 | :heavy_check_mark: | |
 | 20.0 | :heavy_check_mark: | |
 | 19.3 | :heavy_check_mark: | Recommended if you use OTP 19 |
 | 19.2 | :heavy_check_mark: | |
@@ -46,6 +48,9 @@ ok
 5> trooper_ssh:stop(Trooper).
 ok
 ```
+
+You can use for the options whatever from [ssh:connect/3](http://erlang.org/doc/man/ssh.md#connect-3) options.
+
 Enjoy!
 
 
@@ -53,7 +58,10 @@ Enjoy!
 
 
 <table width="100%" border="0" summary="list of modules">
+<tr><td><a href="http://github.com/altenwald/trooper/blob/master/doc/trooper_app.md" class="module">trooper_app</a></td></tr>
 <tr><td><a href="http://github.com/altenwald/trooper/blob/master/doc/trooper_keys.md" class="module">trooper_keys</a></td></tr>
 <tr><td><a href="http://github.com/altenwald/trooper/blob/master/doc/trooper_proxy.md" class="module">trooper_proxy</a></td></tr>
+<tr><td><a href="http://github.com/altenwald/trooper/blob/master/doc/trooper_proxy_chain.md" class="module">trooper_proxy_chain</a></td></tr>
+<tr><td><a href="http://github.com/altenwald/trooper/blob/master/doc/trooper_proxy_sup.md" class="module">trooper_proxy_sup</a></td></tr>
 <tr><td><a href="http://github.com/altenwald/trooper/blob/master/doc/trooper_ssh.md" class="module">trooper_ssh</a></td></tr></table>
 

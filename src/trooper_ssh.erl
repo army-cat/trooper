@@ -50,6 +50,7 @@
 }).
 
 -opaque trooper_ssh() :: #trooper_ssh{}.
+
 -type opts() :: [opt()].
 -type opt() :: {opt_key(), opt_value()}.
 -type opt_value() :: term().
@@ -58,7 +59,7 @@
 -export_type([trooper_ssh/0, opts/0]).
 
 -spec start(opts()) -> {ok, trooper_ssh()} | {error, reason()}.
-%% @doc starts the SSH connection given the parameters.
+%% @doc Starts the SSH connection given the parameters.
 start(Opts) ->
     Host = proplists:get_value(host, Opts, undefined),
     Port = proplists:get_value(port, Opts, 22),
@@ -92,7 +93,7 @@ start(Opts) ->
 
 
 -spec start_link(opts()) -> {ok, trooper_ssh()} | {error, reason()}.
-%% @doc starts the SSH connection given the parameters.
+%% @doc Starts the SSH connection given the parameters.
 start_link(Opts) ->
     case start(Opts) of
         {ok, Trooper} ->
@@ -104,13 +105,13 @@ start_link(Opts) ->
 
 
 -spec get_pid(trooper_ssh()) -> pid().
-%% @doc retrieves the PID from a trooper_ssh type data.
+%% @doc Retrieves the PID from a trooper_ssh type data.
 get_pid(#trooper_ssh{pid = PID}) ->
     PID.
 
 
 -spec have_certificate(opts()) -> boolean().
-%% @doc check if it's needed to use trooper_keys or not.
+%% @doc Check if it's needed to use trooper_keys or not.
 %% @private
 have_certificate(Options) ->
     CertOpts = [rsa_pass_phrase, dsa_pass_phrase,
@@ -119,7 +120,7 @@ have_certificate(Options) ->
 
 
 -spec add_opt(opt_key(), opts()) -> opts().
-%% @doc get the option if exists in the second param or an empty list otherwise.
+%% @doc Get the option if exists in the second param or an empty list otherwise.
 %% @private
 add_opt(Name, Opts) ->
     case proplists:get_value(Name, Opts, undefined) of
@@ -129,14 +130,14 @@ add_opt(Name, Opts) ->
 
 
 -spec stop(trooper_ssh()) -> ok.
-%% @doc stops the SSH connection.
+%% @doc Stops the SSH connection.
 stop(#trooper_ssh{pid=Conn}) ->
     ok = ssh:close(Conn).
 
 
 -spec exec_long_polling(trooper_ssh(), CommandFormat :: string(),
                         Args :: [term()]) -> pid().
-%% @doc executes the command in background setting the current process as the
+%% @doc Executes the command in background setting the current process as the
 %%      receiver for the incoming information from the SSH connection.
 %%      This function let us to use the format and args way to create the
 %%      command to be execute in the remote server.
@@ -151,7 +152,7 @@ exec_long_polling(TrooperSSH, CommandFormat, Args) ->
 
 -spec exec(trooper_ssh(), CommandFormat :: string(), Args :: [term()]) ->
       {ok, exit_status(), binary()} | {error, reason()}.
-%% @doc executes the command in background setting the current process as the
+%% @doc Executes the command in background setting the current process as the
 %%      receiver for the incoming information from the SSH connection.
 %%      This function let us to use the format and args way to create the
 %%      command to be execute in the remote server.
@@ -162,7 +163,7 @@ exec(TrooperSSH, CommandFormat, Args) ->
 
 
 -spec exec_long_polling(trooper_ssh(), Command :: string()) -> pid().
-%% @doc executes the command in background setting the current process as the
+%% @doc Executes the command in background setting the current process as the
 %%      receiver for the incoming information from the SSH connection.
 %% @end
 exec_long_polling(#trooper_ssh{pid=Conn}, Command) ->
@@ -180,7 +181,7 @@ exec_long_polling(#trooper_ssh{pid=Conn}, Command) ->
 
 -spec exec(trooper_ssh(), Command :: string()) ->
       {ok, exit_status(), binary()} | {error, reason()}.
-%% @doc executes the command in background setting the current process as the
+%% @doc Executes the command in background setting the current process as the
 %%      receiver for the incoming information from the SSH connection.
 %% @end
 exec(#trooper_ssh{pid=Conn}, Command) ->
@@ -196,7 +197,7 @@ exec(#trooper_ssh{pid=Conn}, Command) ->
 -spec get_and_send_all_info(pid(),
                             ssh:ssh_connection_ref(),
                             ssh:ssh_channel_id()) -> ok.
-%% @doc loop for exec_long_polling functions. Receives all the information from
+%% @doc Loop for exec_long_polling functions. Receives all the information from
 %%      the SSH connection and send back to the PID in a simpler format.
 %% @private
 get_and_send_all_info(PID, Conn, Chan) ->
@@ -230,7 +231,7 @@ get_and_send_all_info(PID, Conn, Chan) ->
       {ok, exit_status(), binary()} |
       {error, {incomplete, binary()}} |
       {error, etimeout}.
-%% @doc loop for exec commands. It's on charge of receive all of the information
+%% @doc Loop for exec commands. It's on charge of receive all of the information
 %%      from the SSH connection until it's closed and send back as return of
 %%      the function.
 %% @private
