@@ -76,7 +76,7 @@ rsa_direct_error_user_connect_test_() ->
                 {port, Port},
                 {user, ?USERNAME},
                 {id_rsa, aaa}],
-        {error,"User interaction is not allowed"} = trooper_ssh:start(Opts),
+        {error,_} = trooper_ssh:start(Opts),
         ok = stop_daemon(Sshd),
         ok
     end)}.
@@ -163,7 +163,7 @@ rsa_protected_error_user_connect_test_() ->
                 {port, Port},
                 {user, ?USERNAME},
                 {id_rsa, {file, ?BASE_PATH "/user/id_rsa_protected"}}],
-        {error,"User interaction is not allowed"} = trooper_ssh:start(Opts),
+        {error,_} = trooper_ssh:start(Opts),
         ok = stop_daemon(Sshd)
     end)}.
 
@@ -174,7 +174,7 @@ file_error_user_connect_test_() ->
                 {port, Port},
                 {user, ?USERNAME},
                 {id_rsa, {file, ?BASE_PATH "/user/no_file"}}],
-        {error,"User interaction is not allowed"} = trooper_ssh:start(Opts),
+        {error,_} = trooper_ssh:start(Opts),
         ok = stop_daemon(Sshd)
     end)}.
 

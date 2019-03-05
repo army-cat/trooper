@@ -2,7 +2,7 @@
 
 # Trooper #
 
-Copyright (c) 2016-2017 Altenwald Solutions, S.L.
+Copyright (c) 2016-2019 Altenwald Solutions, S.L.
 
 __Authors:__ "Manuel Rubio ([`manuel@altenwald.com`](mailto:manuel@altenwald.com)).
 
@@ -20,6 +20,9 @@ Trooper requires to be run over an Erlang/OTP 19+.
 
 | Erlang Version | Support | Notes |
 |:---|:---:|:---|
+| 21.2 | :heavy_check_mark: | Recommended if you use OTP 21 |
+| 21.1 | :heavy_check_mark: | |
+| 21.0 | :heavy_check_mark: | |
 | 20.3 | :heavy_check_mark: | Recommended if you use OTP 20 |
 | 20.2 | :heavy_check_mark: | |
 | 20.1 | :heavy_check_mark: | |
@@ -63,5 +66,6 @@ Enjoy!
 <tr><td><a href="http://github.com/altenwald/trooper/blob/master/doc/trooper_proxy.md" class="module">trooper_proxy</a></td></tr>
 <tr><td><a href="http://github.com/altenwald/trooper/blob/master/doc/trooper_proxy_chain.md" class="module">trooper_proxy_chain</a></td></tr>
 <tr><td><a href="http://github.com/altenwald/trooper/blob/master/doc/trooper_proxy_sup.md" class="module">trooper_proxy_sup</a></td></tr>
+<tr><td><a href="http://github.com/altenwald/trooper/blob/master/doc/trooper_scp.md" class="module">trooper_scp</a></td></tr>
 <tr><td><a href="http://github.com/altenwald/trooper/blob/master/doc/trooper_ssh.md" class="module">trooper_ssh</a></td></tr></table>
 
