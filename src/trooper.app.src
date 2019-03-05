@@ -1,5 +1,6 @@
 {application, trooper, [
     {description, "Trooper is an Automation Basic Tool"},
+    {pkg_name, "trooper"},
     {vsn, git},
     {registered, []},
     {applications, [
@@ -12,7 +13,6 @@
     ]},
     {mod, {trooper_app, []}},
     {env, []},
-    {maintainers, ["Manuel Rubio"]},
     {licenses, ["LGPL 2.1"]},
     {links,[
         {"Github","https://github.com/altenwald/trooper"}
