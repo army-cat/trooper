@@ -14,11 +14,8 @@ compile:
 	./rebar3 compile
 
 test:
-	./rebar3 do xref, eunit, cover
-	./covertool \
-		-cover _build/test/cover/eunit.coverdata \
-		-appname trooper \
-		-output cobertura.xml > /dev/null
+	./rebar3 do xref, eunit, cover, covertool generate
+	cp _build/test/covertool/trooper.covertool.xml cobertura.xml
 
 shell:
 	./rebar3 as dev shell
