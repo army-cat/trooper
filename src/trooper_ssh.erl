@@ -36,6 +36,9 @@
 -export([
     start/1,
     start_link/1,
+    start_chan/1,
+    stop_chan/1,
+    transaction/2,
     get_pid/1,
     stop/1,
     exec/2,
@@ -49,14 +52,22 @@
     opts :: proplists:proplist()
 }).
 
+-record(trooper_ssh_chan, {
+    trooper_ssh :: trooper_ssh(),
+    channel :: integer()
+}).
+
 -opaque trooper_ssh() :: #trooper_ssh{}.
+-opaque trooper_ssh_chan() :: #trooper_ssh_chan{}.
 
 -type opts() :: [opt()].
 -type opt() :: {opt_key(), opt_value()}.
 -type opt_value() :: term().
 -type opt_key() :: atom().
 
--export_type([trooper_ssh/0, opts/0]).
+-export_type([trooper_ssh/0,
+              trooper_ssh_chan/0,
+              opts/0]).
 
 -spec start(opts()) -> {ok, trooper_ssh()} | {error, reason()}.
 %% @doc Starts the SSH connection given the parameters.
@@ -89,6 +100,36 @@ start(Opts) ->
             }};
         {error, Reason} ->
             {error, Reason}
+    end.
+
+
+-spec start_chan(trooper_ssh()) -> {ok, trooper_ssh_chan()}.
+%% @doc generates SSH channel to run the commands in the same context.
+start_chan(#trooper_ssh{pid = PID} = TrooperSsh) ->
+    {ok, Chan} = ssh_connection:session_channel(PID, ?CHANNEL_TIMEOUT),
+    {ok, #trooper_ssh_chan{channel = Chan, trooper_ssh = TrooperSsh}}.
+
+
+-spec stop_chan(trooper_ssh_chan()) -> ok.
+%% @doc stops a ssh channel.
+stop_chan(#trooper_ssh_chan{trooper_ssh = #trooper_ssh{pid = Conn},
+                            channel = Chan}) ->
+    ssh_connection:close(Conn, Chan).
+
+
+-spec transaction(opts(), fun((trooper_ssh()) -> any())) -> any().
+%% @doc Starts and stops a SSH connection to be available only for the
+%%      closure passed as second parameter.
+transaction(Opts, Fun) ->
+    case start(Opts) of
+        {ok, Trooper} ->
+            try
+                Fun(Trooper)
+            after
+                stop(Trooper)
+            end;
+        Error ->
+            Error
     end.
 
 
@@ -131,11 +172,12 @@ add_opt(Name, Opts) ->
 
 -spec stop(trooper_ssh()) -> ok.
 %% @doc Stops the SSH connection.
-stop(#trooper_ssh{pid=Conn}) ->
+stop(#trooper_ssh{pid = Conn}) ->
     ok = ssh:close(Conn).
 
 
--spec exec_long_polling(trooper_ssh(), CommandFormat :: string(),
+-spec exec_long_polling(trooper_ssh() | trooper_ssh_chan(),
+                        CommandFormat :: string(),
                         Args :: [term()]) -> pid().
 %% @doc Executes the command in background setting the current process as the
 %%      receiver for the incoming information from the SSH connection.
@@ -150,7 +192,8 @@ exec_long_polling(TrooperSSH, CommandFormat, Args) ->
 -type exit_status() :: integer().
 -type reason() :: atom() | string().
 
--spec exec(trooper_ssh(), CommandFormat :: string(), Args :: [term()]) ->
+-spec exec(trooper_ssh() | trooper_ssh_chan(),
+           CommandFormat :: string(), Args :: [term()]) ->
       {ok, exit_status(), binary()} | {error, reason()}.
 %% @doc Executes the command in background setting the current process as the
 %%      receiver for the incoming information from the SSH connection.
@@ -162,7 +205,8 @@ exec(TrooperSSH, CommandFormat, Args) ->
     exec(TrooperSSH, Command).
 
 
--spec exec_long_polling(trooper_ssh(), Command :: string()) -> pid().
+-spec exec_long_polling(trooper_ssh() | trooper_ssh_chan(),
+                        Command :: string()) -> pid().
 %% @doc Executes the command in background setting the current process as the
 %%      receiver for the incoming information from the SSH connection.
 %% @end
@@ -179,13 +223,19 @@ exec_long_polling(#trooper_ssh{pid=Conn}, Command) ->
     end).
 
 
--spec exec(trooper_ssh(), Command :: string()) ->
+-spec exec(trooper_ssh() | trooper_ssh_chan(), Command :: string()) ->
       {ok, exit_status(), binary()} | {error, reason()}.
 %% @doc Executes the command in background setting the current process as the
 %%      receiver for the incoming information from the SSH connection.
 %% @end
-exec(#trooper_ssh{pid=Conn}, Command) ->
-    {ok, Chan} = ssh_connection:session_channel(Conn, ?CHANNEL_TIMEOUT),
+exec(#trooper_ssh{} = TrooperSsh, Command) ->
+    {ok, Chan} = start_chan(TrooperSsh),
+    Result = exec(Chan, Command),
+    stop_chan(Chan),
+    Result;
+
+exec(#trooper_ssh_chan{trooper_ssh = #trooper_ssh{pid = Conn},
+                       channel = Chan}, Command) ->
     case ssh_connection:exec(Conn, Chan, Command, ?COMMAND_TIMEOUT) of
         success ->
             get_all_info(Chan, <<>>, 0);

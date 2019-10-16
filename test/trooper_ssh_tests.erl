@@ -22,6 +22,41 @@ stop_daemon(Sshd) ->
     ok = ssh:stop(),
     ok.
 
+transaction_test_() ->
+    {timeout, 10, ?_test(begin
+        {ok, Sshd, Port} = start_daemon(),
+        Opts = [{host, "localhost"},
+                {port, Port},
+                {user, ?USERNAME},
+                {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
+        ok = trooper_ssh:transaction(Opts, fun(Trooper) ->
+            {ok,0,<<"3.141592653589793\n">>} =
+                trooper_ssh:exec(Trooper, "math:pi()."),
+            ok
+        end),
+        ok = stop_daemon(Sshd),
+        ok
+    end)}.
+
+transaction_error_test_() ->
+    {timeout, 10, ?_test(begin
+        {ok, Sshd, Port} = start_daemon(),
+        WOpts = [{host, "localohosto"},
+                 {port, Port},
+                 {user, ?USERNAME},
+                 {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
+        {error, nxdomain} = trooper_ssh:transaction(WOpts, fun(_) -> ok end),
+        Opts = [{host, "localhost"},
+                {port, Port},
+                {user, ?USERNAME},
+                {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
+        ?assertException(throw, error, trooper_ssh:transaction(Opts, fun(_Trooper) ->
+            throw(error)
+        end)),
+        ok = stop_daemon(Sshd),
+        ok
+    end)}.
+
 rsa_user_connect_test_() ->
     {timeout, 10, ?_test(begin
         {ok, Sshd, Port} = start_daemon(),
@@ -36,7 +71,6 @@ rsa_user_connect_test_() ->
         ok = stop_daemon(Sshd),
         ok
     end)}.
-
 
 rsa_user_with_args_connect_test_() ->
     {timeout, 10, ?_test(begin
@@ -197,6 +231,29 @@ long_polling_exec_test_() ->
         ok = stop_daemon(Sshd),
         ok
     end)}.
+
+%% FIXME: trying to figure out how to make this working :'(
+% long_polling_interactive_exec_test_() ->
+%     {timeout, 10, ?_test(begin
+%         {ok, Sshd, Port} = start_daemon(),
+%         Opts = [{host, "localhost"},
+%                 {port, Port},
+%                 {user, ?USERNAME},
+%                 {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
+%         {ok, Trooper} = trooper_ssh:start(Opts),
+%         Cmd = "io:get_line(\"give me data: \").",
+%         PID = trooper_ssh:exec_long_polling(Trooper, Cmd),
+%         ?assert(is_pid(PID)),
+%         PID ! {send, <<"1234\n">>},
+%         {continue, <<"give me data: ">>} = recv(),
+%         {continue, <<"1234\n">>} = recv(),
+%         {exit_status, 0} = recv(),
+%         closed = recv(),
+%         ?assertNot(is_process_alive(PID)),
+%         ok = trooper_ssh:stop(Trooper),
+%         ok = stop_daemon(Sshd),
+%         ok
+%     end)}.
 
 long_polling_exec_with_args_test_() ->
     {timeout, 10, ?_test(begin
