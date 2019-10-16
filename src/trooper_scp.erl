@@ -38,9 +38,11 @@
 channel(Trooper, Run) ->
     case ssh_sftp:start_channel(trooper_ssh:get_pid(Trooper)) of
         {ok, PID} ->
-            Result = Run(PID),
-            ssh_sftp:stop_channel(PID),
-            Result;
+            try
+                Run(PID)
+            after
+                ssh_sftp:stop_channel(PID)
+            end;
         {error, _} = Error ->
             Error
     end.

@@ -112,6 +112,14 @@ reason() = atom() | string()
 
 __abstract datatype__: `trooper_ssh()`
 
+
+
+
+### <a name="type-trooper_ssh_chan">trooper_ssh_chan()</a> ###
+
+
+__abstract datatype__: `trooper_ssh_chan()`
+
 <a name="index"></a>
 
 ## Function Index ##
@@ -121,7 +129,8 @@ __abstract datatype__: `trooper_ssh()`
 receiver for the incoming information from the SSH connection.</td></tr><tr><td valign="top"><a href="#exec-3">exec/3</a></td><td>Executes the command in background setting the current process as the
 receiver for the incoming information from the SSH connection.</td></tr><tr><td valign="top"><a href="#exec_long_polling-2">exec_long_polling/2</a></td><td>Executes the command in background setting the current process as the
 receiver for the incoming information from the SSH connection.</td></tr><tr><td valign="top"><a href="#exec_long_polling-3">exec_long_polling/3</a></td><td>Executes the command in background setting the current process as the
-receiver for the incoming information from the SSH connection.</td></tr><tr><td valign="top"><a href="#get_pid-1">get_pid/1</a></td><td>Retrieves the PID from a trooper_ssh type data.</td></tr><tr><td valign="top"><a href="#start-1">start/1</a></td><td>Starts the SSH connection given the parameters.</td></tr><tr><td valign="top"><a href="#start_link-1">start_link/1</a></td><td>Starts the SSH connection given the parameters.</td></tr><tr><td valign="top"><a href="#stop-1">stop/1</a></td><td>Stops the SSH connection.</td></tr></table>
+receiver for the incoming information from the SSH connection.</td></tr><tr><td valign="top"><a href="#get_pid-1">get_pid/1</a></td><td>Retrieves the PID from a trooper_ssh type data.</td></tr><tr><td valign="top"><a href="#start-1">start/1</a></td><td>Starts the SSH connection given the parameters.</td></tr><tr><td valign="top"><a href="#start_chan-1">start_chan/1</a></td><td>generates SSH channel to run the commands in the same context.</td></tr><tr><td valign="top"><a href="#start_link-1">start_link/1</a></td><td>Starts the SSH connection given the parameters.</td></tr><tr><td valign="top"><a href="#stop-1">stop/1</a></td><td>Stops the SSH connection.</td></tr><tr><td valign="top"><a href="#stop_chan-1">stop_chan/1</a></td><td>stops a ssh channel.</td></tr><tr><td valign="top"><a href="#transaction-2">transaction/2</a></td><td>Starts and stops a SSH connection to be available only for the
+closure passed as second parameter.</td></tr></table>
 
 
 <a name="functions"></a>
@@ -133,7 +142,7 @@ receiver for the incoming information from the SSH connection.</td></tr><tr><td 
 ### exec/2 ###
 
 <pre><code>
-exec(Trooper_ssh::<a href="#type-trooper_ssh">trooper_ssh()</a>, Command::string()) -&gt; {ok, <a href="#type-exit_status">exit_status()</a>, binary()} | {error, <a href="#type-reason">reason()</a>}
+exec(Trooper_ssh::<a href="#type-trooper_ssh">trooper_ssh()</a> | <a href="#type-trooper_ssh_chan">trooper_ssh_chan()</a>, Command::string()) -&gt; {ok, <a href="#type-exit_status">exit_status()</a>, binary()} | {error, <a href="#type-reason">reason()</a>}
 </code></pre>
 <br />
 
@@ -145,7 +154,7 @@ receiver for the incoming information from the SSH connection.
 ### exec/3 ###
 
 <pre><code>
-exec(TrooperSSH::<a href="#type-trooper_ssh">trooper_ssh()</a>, CommandFormat::string(), Args::[term()]) -&gt; {ok, <a href="#type-exit_status">exit_status()</a>, binary()} | {error, <a href="#type-reason">reason()</a>}
+exec(TrooperSSH::<a href="#type-trooper_ssh">trooper_ssh()</a> | <a href="#type-trooper_ssh_chan">trooper_ssh_chan()</a>, CommandFormat::string(), Args::[term()]) -&gt; {ok, <a href="#type-exit_status">exit_status()</a>, binary()} | {error, <a href="#type-reason">reason()</a>}
 </code></pre>
 <br />
 
@@ -159,7 +168,7 @@ command to be execute in the remote server.
 ### exec_long_polling/2 ###
 
 <pre><code>
-exec_long_polling(Trooper_ssh::<a href="#type-trooper_ssh">trooper_ssh()</a>, Command::string()) -&gt; pid()
+exec_long_polling(Trooper_ssh::<a href="#type-trooper_ssh">trooper_ssh()</a> | <a href="#type-trooper_ssh_chan">trooper_ssh_chan()</a>, Command::string()) -&gt; pid()
 </code></pre>
 <br />
 
@@ -171,7 +180,7 @@ receiver for the incoming information from the SSH connection.
 ### exec_long_polling/3 ###
 
 <pre><code>
-exec_long_polling(TrooperSSH::<a href="#type-trooper_ssh">trooper_ssh()</a>, CommandFormat::string(), Args::[term()]) -&gt; pid()
+exec_long_polling(TrooperSSH::<a href="#type-trooper_ssh">trooper_ssh()</a> | <a href="#type-trooper_ssh_chan">trooper_ssh_chan()</a>, CommandFormat::string(), Args::[term()]) -&gt; pid()
 </code></pre>
 <br />
 
@@ -202,6 +211,17 @@ start(Opts::<a href="#type-opts">opts()</a>) -&gt; {ok, <a href="#type-trooper_s
 
 Starts the SSH connection given the parameters.
 
+<a name="start_chan-1"></a>
+
+### start_chan/1 ###
+
+<pre><code>
+start_chan(Trooper_ssh::<a href="#type-trooper_ssh">trooper_ssh()</a>) -&gt; {ok, <a href="#type-trooper_ssh_chan">trooper_ssh_chan()</a>}
+</code></pre>
+<br />
+
+generates SSH channel to run the commands in the same context.
+
 <a name="start_link-1"></a>
 
 ### start_link/1 ###
@@ -223,4 +243,27 @@ stop(Trooper_ssh::<a href="#type-trooper_ssh">trooper_ssh()</a>) -&gt; ok
 <br />
 
 Stops the SSH connection.
+
+<a name="stop_chan-1"></a>
+
+### stop_chan/1 ###
+
+<pre><code>
+stop_chan(Trooper_ssh_chan::<a href="#type-trooper_ssh_chan">trooper_ssh_chan()</a>) -&gt; ok
+</code></pre>
+<br />
+
+stops a ssh channel.
+
+<a name="transaction-2"></a>
+
+### transaction/2 ###
+
+<pre><code>
+transaction(Opts::<a href="#type-opts">opts()</a>, Fun::fun((<a href="#type-trooper_ssh">trooper_ssh()</a>) -&gt; any())) -&gt; any()
+</code></pre>
+<br />
+
+Starts and stops a SSH connection to be available only for the
+closure passed as second parameter.
 
