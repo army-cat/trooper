@@ -3,9 +3,9 @@
 @title Trooper
 
 @doc
-<a href="https://travis-ci.org/altenwald/trooper"><img src="https://img.shields.io/travis/altenwald/trooper/master.svg" alt="Build Status"/></a>
-<a href='https://codecov.io/gh/altenwald/trooper'><img src='https://img.shields.io/codecov/c/github/altenwald/trooper.svg' alt='Codecov' /></a>
-<a href='https://raw.githubusercontent.com/altenwald/trooper/master/COPYING'><img src='https://img.shields.io/github/license/altenwald/trooper.svg' alt='License: LGPL 2.1'/></a>
+<a href="https://travis-ci.org/army-cat/trooper"><img src="https://img.shields.io/travis/army-cat/trooper/master.svg" alt="Build Status"/></a>
+<a href='https://codecov.io/gh/army-cat/trooper'><img src='https://img.shields.io/codecov/c/github/army-cat/trooper.svg' alt='Codecov' /></a>
+<a href='https://raw.githubusercontent.com/army-cat/trooper/master/COPYING'><img src='https://img.shields.io/github/license/army-cat/trooper.svg' alt='License: LGPL 2.1'/></a>
 <a href="https://hex.pm/packages/trooper"><img alt="Hex" src="https://img.shields.io/hexpm/v/trooper.svg"/></a>
 
 Trooper is a soldier in charge to go to other machines (via SSH) and follow your commands.

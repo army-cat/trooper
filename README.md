@@ -6,9 +6,9 @@ Copyright (c) 2016-2019 Altenwald Solutions, S.L.
 
 __Authors:__ "Manuel Rubio ([`manuel@altenwald.com`](mailto:manuel@altenwald.com)).
 
-[![Build Status](https://img.shields.io/travis/altenwald/trooper/master.svg)](https://travis-ci.org/altenwald/trooper)
-[![Codecov](https://img.shields.io/codecov/c/github/altenwald/trooper.svg)](https://codecov.io/gh/altenwald/trooper)
-[![License: LGPL 2.1](https://img.shields.io/github/license/altenwald/trooper.svg)](https://raw.githubusercontent.com/altenwald/trooper/master/COPYING)
+[![Build Status](https://img.shields.io/travis/army-cat/trooper/master.svg)](https://travis-ci.org/army-cat/trooper)
+[![Codecov](https://img.shields.io/codecov/c/github/army-cat/trooper.svg)](https://codecov.io/gh/army-cat/trooper)
+[![License: LGPL 2.1](https://img.shields.io/github/license/army-cat/trooper.svg)](https://raw.githubusercontent.com/army-cat/trooper/master/COPYING)
 [![Hex](https://img.shields.io/hexpm/v/trooper.svg)](https://hex.pm/packages/trooper)
 
 Trooper is a soldier in charge to go to other machines (via SSH) and follow your commands.
