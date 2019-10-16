@@ -64,11 +64,11 @@ Enjoy!
 
 
 <table width="100%" border="0" summary="list of modules">
-<tr><td><a href="http://github.com/altenwald/trooper/blob/master/doc/trooper_app.md" class="module">trooper_app</a></td></tr>
-<tr><td><a href="http://github.com/altenwald/trooper/blob/master/doc/trooper_keys.md" class="module">trooper_keys</a></td></tr>
-<tr><td><a href="http://github.com/altenwald/trooper/blob/master/doc/trooper_proxy.md" class="module">trooper_proxy</a></td></tr>
-<tr><td><a href="http://github.com/altenwald/trooper/blob/master/doc/trooper_proxy_chain.md" class="module">trooper_proxy_chain</a></td></tr>
-<tr><td><a href="http://github.com/altenwald/trooper/blob/master/doc/trooper_proxy_sup.md" class="module">trooper_proxy_sup</a></td></tr>
-<tr><td><a href="http://github.com/altenwald/trooper/blob/master/doc/trooper_scp.md" class="module">trooper_scp</a></td></tr>
-<tr><td><a href="http://github.com/altenwald/trooper/blob/master/doc/trooper_ssh.md" class="module">trooper_ssh</a></td></tr></table>
+<tr><td><a href="http://github.com/army-cat/trooper/blob/master/doc/trooper_app.md" class="module">trooper_app</a></td></tr>
+<tr><td><a href="http://github.com/army-cat/trooper/blob/master/doc/trooper_keys.md" class="module">trooper_keys</a></td></tr>
+<tr><td><a href="http://github.com/army-cat/trooper/blob/master/doc/trooper_proxy.md" class="module">trooper_proxy</a></td></tr>
+<tr><td><a href="http://github.com/army-cat/trooper/blob/master/doc/trooper_proxy_chain.md" class="module">trooper_proxy_chain</a></td></tr>
+<tr><td><a href="http://github.com/army-cat/trooper/blob/master/doc/trooper_proxy_sup.md" class="module">trooper_proxy_sup</a></td></tr>
+<tr><td><a href="http://github.com/army-cat/trooper/blob/master/doc/trooper_scp.md" class="module">trooper_scp</a></td></tr>
+<tr><td><a href="http://github.com/army-cat/trooper/blob/master/doc/trooper_ssh.md" class="module">trooper_ssh</a></td></tr></table>
 
