@@ -1,5 +1,5 @@
 @author "Manuel Rubio <manuel@altenwald.com>"
-@copyright 2016-2019 Altenwald Solutions, S.L.
+@copyright 2016-2021 Altenwald Solutions, S.L.
 @title Trooper
 
 @doc
@@ -14,9 +14,16 @@ Trooper is a soldier in charge to go to other machines (via SSH) and follow your
 
 Trooper requires to be run over an Erlang/OTP 19+.
 
+> :warning: **Don't use DSA for OTP 23+**, we found very difficult to put this working. But if you achieve it, please let us know how!
+
 | Erlang Version | Support | Notes |
 |:---|:---:|:---|
-| 22.1 | :heavy_check_mark: | Recommended if you use OTP 22 |
+| 23.2 | :heavy_check_mark: | Recommended if you use OTP 23 |
+| 23.1 | :heavy_check_mark: | |
+| 23.0 | :heavy_check_mark: | |
+| 22.3 | :heavy_check_mark: | Recommended if you use OTP 22 |
+| 22.2 | :heavy_check_mark: | |
+| 22.1 | :heavy_check_mark: | |
 | 22.0 | :heavy_check_mark: | |
 | 21.3 | :heavy_check_mark: | Recommended if you use OTP 21 |
 | 21.2 | :heavy_check_mark: | |
