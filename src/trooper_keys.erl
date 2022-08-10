@@ -44,7 +44,7 @@ add_host_key(_HostNames, _Key, _ConnectOptions) -> ok.
 
 -spec is_host_key(ssh_client_key_api:public_key(), Host :: string(),
                   ssh_client_key_api:public_key_algorithm(),
-                  [proplists:property()]) -> true.
+                  [proplists:property()]) -> false.
 %% @doc Is a trusted host key? The answer is always no (false) to force to the
 %%      system to use add_host_key/3.
 %% @end
@@ -52,8 +52,8 @@ is_host_key(_Key, _Host, _Algorithm, _ConnectOptions) -> false.
 
 
 -spec user_key(ssh_client_key_api:public_key_algorithm(),
-               [proplists:property()]) ->
-      {ok, ssh_client_key_api:private_key()}.
+               proplists:proplist()) ->
+      {ok, ssh_client_key_api:private_key()} | {error, term()}.
 %% @doc fetch the user public key. It's retrieved from the options.
 user_key(Algorithm, ConnectOptions) ->
     PrivateOpts = proplists:get_value(key_cb_private, ConnectOptions, []),
@@ -97,7 +97,8 @@ get_algo_pass(id_dsa) -> dsa_pass_phrase;
 get_algo_pass(id_ecdsa) -> dsa_pass_phrase.
 
 
--spec decode_ssh_cert(binary(), binary() | string()) -> binary().
+-spec decode_ssh_cert(binary(), binary() | string()) ->
+    ssh_client_key_api:private_key().
 %% @doc decode the given certificate and the password to do it.
 %% @private
 decode_ssh_cert(Pem, Password) ->
@@ -113,7 +114,8 @@ decode_ssh_cert(Pem, Password) ->
 -type reason() :: atom() | string().
 
 -spec decode(binary(), binary() | string()) ->
-      {ok, binary()} | {error, reason()}.
+      {ok, ssh_client_key_api:private_key()} |
+      {error, reason()}.
 %% doc decodes the certificate with the given password.
 %% @private
 decode(Certificate, Password) ->

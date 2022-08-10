@@ -48,7 +48,7 @@
 -record(trooper_proxy, {
     supervisor :: pid(),
     supervisor_ref :: reference(),
-    trooper_ssh :: trooper_ssh:trooper_ssh()
+    trooper_ssh :: trooper_ssh:trooper_ssh() | undefined
 }).
 
 -opaque trooper_proxy() :: #trooper_proxy{}.
@@ -64,7 +64,7 @@ start(Configs) ->
                                   supervisor_ref = Ref}).
 
 
--spec start([trooper_ssh:opts()], [pid()]) -> {ok, trooper_proxy()}.
+-spec start([trooper_ssh:opts()], [pid()] | trooper_proxy()) -> {ok, trooper_proxy()}.
 %% @private
 start([Config1,Config2|Configs], #trooper_proxy{supervisor = Sup} = TProxy) ->
     Cmd = proplists:get_value(proxy, Config1, "nc -w 60 ~s ~b"),

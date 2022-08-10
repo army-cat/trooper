@@ -54,7 +54,7 @@
 
 -record(trooper_ssh_chan, {
     trooper_ssh :: trooper_ssh(),
-    channel :: integer()
+    channel :: ssh:channel_id()
 }).
 
 -opaque trooper_ssh() :: #trooper_ssh{}.
@@ -205,12 +205,11 @@ exec(TrooperSSH, CommandFormat, Args) ->
     exec(TrooperSSH, Command).
 
 
--spec exec_long_polling(trooper_ssh() | trooper_ssh_chan(),
-                        Command :: string()) -> pid().
+-spec exec_long_polling(trooper_ssh(), Command :: string()) -> pid().
 %% @doc Executes the command in background setting the current process as the
 %%      receiver for the incoming information from the SSH connection.
 %% @end
-exec_long_polling(#trooper_ssh{pid=Conn}, Command) ->
+exec_long_polling(#trooper_ssh{pid = Conn}, Command) ->
     Parent = self(),
     spawn_link(fun() ->
         {ok, Chan} = ssh_connection:session_channel(Conn, ?CHANNEL_TIMEOUT),
@@ -224,7 +223,7 @@ exec_long_polling(#trooper_ssh{pid=Conn}, Command) ->
 
 
 -spec exec(trooper_ssh() | trooper_ssh_chan(), Command :: string()) ->
-      {ok, exit_status(), binary()} | {error, reason()}.
+      {ok, exit_status(), binary()} | {error, reason()}.
 %% @doc Executes the command in background setting the current process as the
 %%      receiver for the incoming information from the SSH connection.
 %% @end
@@ -245,8 +244,8 @@ exec(#trooper_ssh_chan{trooper_ssh = #trooper_ssh{pid = Conn},
 
 
 -spec get_and_send_all_info(pid(),
-                            ssh:ssh_connection_ref(),
-                            ssh:ssh_channel_id()) -> ok.
+                            pid() | ssh:ssh_connection_ref(),
+                            ssh:channel_id()) -> ok.
 %% @doc Loop for exec_long_polling functions. Receives all the information from
 %%      the SSH connection and send back to the PID in a simpler format.
 %% @private
@@ -277,7 +276,7 @@ get_and_send_all_info(PID, Conn, Chan) ->
     end.
 
 
--spec get_all_info(ssh:ssh_channel_id(), binary(), exit_status()) ->
+-spec get_all_info(ssh:channel_id(), binary(), exit_status()) ->
       {ok, exit_status(), binary()} |
       {error, {incomplete, binary()}} |
       {error, etimeout}.
