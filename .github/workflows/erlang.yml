@@ -24,3 +24,10 @@ jobs:
       run: make compile
     - name: Run tests
       run: make test
+
+    - uses: codecov/codecov-action@v5
+      with:
+        fail_ci_if_error: true
+        files: ./cobertura.xml
+        token: ${{ secrets.CODECOV_TOKEN }}
+        verbose: true # optional (default = false)

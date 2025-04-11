@@ -4,6 +4,7 @@ Copyright (c) 2016-2025 Altenwald
 
 __Authors:__ "Manuel Rubio ([`manuel@altenwald.com`](mailto:manuel@altenwald.com)).
 
+[![codecov](https://codecov.io/gh/army-cat/trooper/graph/badge.svg?token=Oa7Ak456tN)](https://codecov.io/gh/army-cat/trooper)
 [![Hex](https://img.shields.io/hexpm/v/trooper.svg)](https://hex.pm/packages/trooper)
 
 Trooper is a soldier in charge to go to other machines (via SSH) and follow your commands.

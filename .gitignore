@@ -7,3 +7,4 @@ _build/
 cobertura.xml
 doc/*.html
 rebar3.crashdump
+.envrc
