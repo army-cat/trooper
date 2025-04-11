@@ -14,7 +14,7 @@ compile:
 	./rebar3 compile
 
 test:
-	./rebar3 do xref, eunit, cover, covertool generate
+	./rebar3 do xref, dialyzer, eunit, cover, covertool generate
 	cp _build/test/covertool/trooper.covertool.xml cobertura.xml
 
 shell:

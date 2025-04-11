@@ -13,10 +13,6 @@ Trooper is a soldier in charge to go to other machines (via SSH) and follow your
 
 Trooper requires to be run over an Erlang/OTP 24+.
 
-> #### Don't use DSA for OTP 23+ {: .warning}
->
-> We found very difficult to put this working. But if you achieve it, please let us know how!
-
 ### Example
 
 ```erlang

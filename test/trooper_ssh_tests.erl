@@ -129,51 +129,6 @@ rsa_protected_user_connect_test_() ->
         ok = stop_daemon(Sshd)
     end}.
 
-dsa_user_connect_test_() ->
-    case list_to_integer(erlang:system_info(otp_release)) < 23 of
-        true ->
-            {timeout, 10, ?_test(begin
-                {ok, Sshd, Port} = start_daemon(),
-                Opts = [{host, "localhost"},
-                        {port, Port},
-                        {user, ?USERNAME},
-                        {id_dsa, {file, ?BASE_PATH "/user/id_dsa"}}],
-                {ok, Trooper} = trooper_ssh:start(Opts),
-                {ok,0,<<"3.141592653589793", _/binary>>} =
-                    trooper_ssh:exec(Trooper, "math:pi()."),
-                ok = trooper_ssh:stop(Trooper),
-                ok = stop_daemon(Sshd),
-                ok
-            end)};
-        false ->
-            %% FIXME: Ok, maybe it's a configuration possible to get this
-            %% working with DSA... but it's too difficult at the moment.
-            fun() -> ok end
-    end.
-
-
-dsa_protected_user_connect_test_() ->
-    case list_to_integer(erlang:system_info(otp_release)) < 23 of
-        true ->
-            {timeout, 10, fun() ->
-                {ok, Sshd, Port} = start_daemon(),
-                Opts = [{host, "localhost"},
-                        {port, Port},
-                        {user, ?USERNAME},
-                        {id_dsa, {file, ?BASE_PATH "/user/id_dsa_protected"}},
-                        {dsa_pass_phrase, "secret"}],
-                {ok, Trooper} = trooper_ssh:start(Opts),
-                {ok,0,<<"3.141592653589793", _/binary>>} =
-                    trooper_ssh:exec(Trooper, "math:pi()."),
-                ok = trooper_ssh:stop(Trooper),
-                ok = stop_daemon(Sshd)
-            end};
-        false ->
-            %% FIXME: Ok, maybe it's a configuration possible to get this
-            %% working with DSA... but it's too dificult at the moment.
-            fun() -> ok end
-    end.
-
 ecdsa_user_connect_test_() ->
     {timeout, 10, ?_test(begin
         {ok, Sshd, Port} = start_daemon(),
@@ -196,7 +151,7 @@ ecdsa_protected_user_connect_test_() ->
                 {port, Port},
                 {user, ?USERNAME},
                 {id_ecdsa, {file, ?BASE_PATH "/user/id_ecdsa_protected"}},
-                {dsa_pass_phrase, "secret"}],
+                {ecdsa_pass_phrase, "secret"}],
         {ok, Trooper} = trooper_ssh:start(Opts),
         {ok,0,<<"3.141592653589793", _/binary>>} =
             trooper_ssh:exec(Trooper, "math:pi()."),

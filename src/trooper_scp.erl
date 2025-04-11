@@ -25,7 +25,7 @@
 ]).
 
 -record(file_handler, {
-    trooper :: trooper:trooper(),
+    trooper :: trooper_ssh:trooper_ssh(),
     handler :: term()
 }).
 

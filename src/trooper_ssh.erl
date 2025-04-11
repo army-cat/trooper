@@ -76,7 +76,6 @@ start(Opts) ->
     Port = proplists:get_value(port, Opts, 22),
     OtherOpts =
         add_opt(id_rsa, Opts) ++
-        add_opt(id_dsa, Opts) ++
         add_opt(id_ecdsa, Opts),
     Options = [
         {connect_timeout, ?CONNECT_TIMEOUT},
@@ -87,7 +86,7 @@ start(Opts) ->
     ] ++
         add_opt(password, Opts) ++
         add_opt(rsa_pass_phrase, Opts) ++
-        add_opt(dsa_pass_phrase, Opts),
+        add_opt(ecdsa_pass_phrase, Opts),
     ConnOpts = case have_certificate(OtherOpts) of
         true -> [{key_cb, {trooper_keys, OtherOpts ++ Options}}|Options];
         false -> Options
@@ -156,13 +155,17 @@ get_pid(#trooper_ssh{pid = PID}) ->
 %% @private
 have_certificate(Options) ->
     CertOpts = [rsa_pass_phrase, dsa_pass_phrase,
-                id_ecdsa, id_rsa, id_dsa],
+                id_ecdsa, id_rsa],
     lists:any(fun({Key, _}) -> lists:member(Key, CertOpts) end, Options).
 
 
--spec add_opt(opt_key(), opts()) -> opts().
-%% @doc Get the option if exists in the second param or an empty list otherwise.
-%% @private
+% Get the option if exists in the second param or an empty list otherwise.
+add_opt(ecdsa_pass_phrase, Opts) ->
+    case proplists:get_value(ecdsa_pass_phrase, Opts, undefined) of
+        undefined -> [];
+        Value -> [{dsa_pass_phrase, Value}]
+    end;
+
 add_opt(Name, Opts) ->
     case proplists:get_value(Name, Opts, undefined) of
         undefined -> [];

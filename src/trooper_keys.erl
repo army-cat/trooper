@@ -1,4 +1,4 @@
-%% @doc Trooper keys implements the `ssh_client_key_api' behaviour to give a
+%% @doc Trooper keys implements the `ssh_client_key_api' behavior to give a
 %%      solution to handle the keys without files and ensuring all of the
 %%      connections are validated instead of create a known hosts file.
 %%
@@ -6,20 +6,18 @@
 %%      a certificate passed in those options and even the password to access
 %%      to that key.
 %%
-%%      We can configure this in diferent ways:
+%%      We can configure this in different ways:
 %%
-%%      <pre lang="erlang"><![CDATA[
+%%      ```erlang
 %%      % config for inline certificate (without password)
 %%      {id_rsa, <<"-----BEGIN RSA PRIVATE KEY-----\nMIIE..."},
 %%      % or from a file
 %%      {id_rsa, {file, "id_rsa"}},
 %%      % and adding a password:
 %%      {rsa_pass_phrase, <<"mypass">>},
-%%      ]]></pre>
+%%      ```
 %%
-%%      You can do that with `rsa', `dsa' and `ecdsa' algorithms. Keep in
-%%      mind the `ecdsa' algorithm uses the `dsa_pass_phrase' configuration
-%%      for the password.
+%%      You can do that with `rsa' and `ecdsa' algorithms.
 %% @end
 -module(trooper_keys).
 -author('manuel@altenwald.com').
@@ -73,18 +71,15 @@ user_key(Algorithm, ConnectOptions) ->
 
 % Internal functions
 
--type algorithms() :: id_rsa | id_dsa | id_ecdsa.
--type algorithm_phrases() :: rsa_pass_phrase |
-                             dsa_pass_phrase |
-                             ecdsa_pass_phrase.
+-type algorithms() :: id_rsa | id_ecdsa.
+-type algorithm_phrases() :: rsa_pass_phrase | ecdsa_pass_phrase.
 
--spec get_algo(ssh_client_key_api:public_key_algorithm()) -> algorithms().
+-spec get_algo(ssh:pubkey_alg()) -> algorithms().
 %% @doc translate the incoming algorithm to the specific key to retrieve the
 %%      algorithm from the options.
 %% @private
 get_algo('ssh-rsa') -> id_rsa;
-get_algo('ssh-dss') -> id_dsa;
-get_algo(_) -> id_ecdsa.
+get_algo(_Algo) -> id_ecdsa.
 
 
 -spec get_algo_pass(algorithms()) -> algorithm_phrases().
@@ -92,12 +87,11 @@ get_algo(_) -> id_ecdsa.
 %%      algorithm used.
 %% @private
 get_algo_pass(id_rsa) -> rsa_pass_phrase;
-get_algo_pass(id_dsa) -> dsa_pass_phrase;
 get_algo_pass(id_ecdsa) -> dsa_pass_phrase.
 
 
 -spec decode_ssh_cert(binary(), binary() | string()) ->
-    ssh_client_key_api:private_key().
+    public_key:private_key().
 %% @doc decode the given certificate and the password to do it.
 %% @private
 decode_ssh_cert(Pem, Password) ->
@@ -113,7 +107,7 @@ decode_ssh_cert(Pem, Password) ->
 -type reason() :: atom() | string().
 
 -spec decode(binary(), binary() | string()) ->
-      {ok, ssh_client_key_api:private_key()} |
+      {ok, public_key:private_key()} |
       {error, reason()}.
 %% doc decodes the certificate with the given password.
 %% @private

@@ -35,7 +35,7 @@
 %             [{host, "localhost"},
 %              {port, Port2},
 %              {user, ?USERNAME},
-%              {id_dsa, {file, ?BASE_PATH "/user/id_dsa"}},
+%              {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}},
 %              {proxy, "os:cmd(\"nc ~s ~b\")."}]],
 %     {ok, Trooper} = trooper_proxy:start(Opts),
 %     Cmd = "whereis(ssh_system_any_~b_default_sup).",
