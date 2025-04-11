@@ -1,6 +1,6 @@
 %% @doc Trooper SCP is in charge of handle remote/local files copy.
 %%
-%%      You need to have a tropper SSH connection opened to list
+%%      You need to have a trooper SSH connection opened to list
 %%      remote files, upload local files to the remote place or
 %%      download remote files.
 %% @end
@@ -47,55 +47,57 @@ channel(Trooper, Run) ->
             Error
     end.
 
--spec list_dir(trooper_ssh:trooper(), Path :: string()) ->
+-spec list_dir(trooper_ssh:trooper_ssh(), Path :: string()) ->
       {ok, [string()]} | {error, reason()}.
 %%@doc List remote directory.
 list_dir(Trooper, Path) ->
     channel(Trooper, fun(PID) -> ssh_sftp:list_dir(PID, Path) end).
 
--spec make_dir(trooper_ssh:trooper(), Name :: string()) ->
+-spec make_dir(trooper_ssh:trooper_ssh(), Name :: string()) ->
       ok | {error, reason()}.
 %%@doc Creates a remote directory.
 make_dir(Trooper, Name) ->
     channel(Trooper, fun(PID) -> ssh_sftp:make_dir(PID, Name) end).
 
--spec del_dir(trooper_ssh:trooper(), Name :: string()) ->
+-spec del_dir(trooper_ssh:trooper_ssh(), Name :: string()) ->
       ok | {error, reason()}.
 %%@doc Removes a remote directory.
 del_dir(Trooper, Name) ->
     channel(Trooper, fun(PID) -> ssh_sftp:del_dir(PID, Name) end).
 
--spec rename(trooper_ssh:trooper(), OldName :: string(), NewName :: string()) ->
+-spec rename(trooper_ssh:trooper_ssh(), OldName :: string(), NewName :: string()) ->
       ok | {error, reason()}.
 %%@doc Renames a remote file.
 rename(Trooper, OldName, NewName) ->
     channel(Trooper, fun(PID) -> ssh_sftp:rename(PID, OldName, NewName) end).
 
--spec delete(trooper_ssh:trooper(), Name :: string()) ->
+-spec delete(trooper_ssh:trooper_ssh(), Name :: string()) ->
       ok | {error, reason()}.
 %%@doc Deletes a remote file.
 delete(Trooper, Name) ->
     channel(Trooper, fun(PID) -> ssh_sftp:delete(PID, Name) end).
 
--spec make_symlink(trooper_ssh:trooper(), Name :: string(), Target :: string()) ->
+-spec make_symlink(trooper_ssh:trooper_ssh(), Name :: string(), Target :: string()) ->
       ok | {error, reason()}.
 %%@doc Makes a symlink in the a remote server.
 make_symlink(Trooper, Name, Target) ->
     channel(Trooper, fun(PID) -> ssh_sftp:make_symlink(PID, Name, Target) end).
 
--spec read_file(trooper_ssh:trooper(), Name :: string()) ->
+-spec read_file(trooper_ssh:trooper_ssh(), Name :: string()) ->
       {ok, binary()} | {error, reason()}.
 %%@doc Reads a remote file content.
 read_file(Trooper, Name) ->
     channel(Trooper, fun(PID) -> ssh_sftp:read_file(PID, Name) end).
 
--spec write_file(trooper_ssh:trooper(), Name :: string(), Content :: iolist()) ->
+-spec write_file(trooper_ssh:trooper_ssh(), Name :: string(), Content :: iolist()) ->
       ok | {error, reason()}.
 %%@doc Writes a remote file content.
 write_file(Trooper, Name, Content) ->
     channel(Trooper, fun(PID) -> ssh_sftp:write_file(PID, Name, Content) end).
 
--spec open(file_handler(), Name :: string(), Mode :: ssh_sftp:mode()) ->
+-type mode() :: [read | write | append | binary | raw].
+
+-spec open(file_handler(), Name :: string(), Mode :: mode()) ->
       {ok, file_handler()} | {error, reason()}.
 %%@doc Opens a remote file using a handler to let use read and write.
 %%     Depending on the mode in use.

@@ -1,7 +1,7 @@
-all: compile
+all: compile test
 
 doc:
-	./rebar3 as doc edown
+	./rebar3 ex_doc
 
 clean-devel: clean
 	-rm -rf _build

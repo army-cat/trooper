@@ -1,4 +1,0 @@
-%% encoding: UTF-8
-{application,trooper}.
-{modules,[trooper_app,trooper_keys,trooper_proxy,trooper_proxy_chain,
-          trooper_proxy_sup,trooper_scp,trooper_ssh]}.

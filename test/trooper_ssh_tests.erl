@@ -17,7 +17,6 @@ start_daemon() ->
     {ok, Sshd, Port}.
 
 stop_daemon(Sshd) ->
-    ok = ssh:stop_listener(Sshd),
     ok = ssh:stop_daemon(Sshd),
     ok = ssh:stop(),
     ok.
@@ -41,7 +40,7 @@ transaction_test_() ->
 transaction_error_test_() ->
     {timeout, 10, ?_test(begin
         {ok, Sshd, Port} = start_daemon(),
-        WOpts = [{host, "localohosto"},
+        WOpts = [{host, "nxdomain_error"},
                  {port, Port},
                  {user, ?USERNAME},
                  {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
@@ -148,7 +147,7 @@ dsa_user_connect_test_() ->
             end)};
         false ->
             %% FIXME: Ok, maybe it's a configuration possible to get this
-            %% working with DSA... but it's too dificult at the moment.
+            %% working with DSA... but it's too difficult at the moment.
             fun() -> ok end
     end.
 

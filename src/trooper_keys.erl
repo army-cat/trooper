@@ -34,16 +34,16 @@
 ]).
 
 
--spec add_host_key(string(), ssh_client_key_api:public_key(),
+-spec add_host_key(string(), public_key:public_key(),
                    [proplists:property()]) -> ok.
 %% @doc adds a trusted host key. In this implementation the addition is not
-%%      done because all of the hosts are intented to be accepted.
+%%      done because all of the hosts are intended to be accepted.
 %% @end
 add_host_key(_HostNames, _Key, _ConnectOptions) -> ok.
 
 
--spec is_host_key(ssh_client_key_api:public_key(), Host :: string(),
-                  ssh_client_key_api:public_key_algorithm(),
+-spec is_host_key(public_key:public_key(), Host :: string(),
+                  ssh:pubkey_alg(),
                   [proplists:property()]) -> false.
 %% @doc Is a trusted host key? The answer is always no (false) to force to the
 %%      system to use add_host_key/3.
@@ -51,9 +51,8 @@ add_host_key(_HostNames, _Key, _ConnectOptions) -> ok.
 is_host_key(_Key, _Host, _Algorithm, _ConnectOptions) -> false.
 
 
--spec user_key(ssh_client_key_api:public_key_algorithm(),
-               proplists:proplist()) ->
-      {ok, ssh_client_key_api:private_key()} | {error, term()}.
+-spec user_key(ssh:pubkey_alg(), proplists:proplist()) ->
+      {ok, public_key:private_key()} | {error, term()}.
 %% @doc fetch the user public key. It's retrieved from the options.
 user_key(Algorithm, ConnectOptions) ->
     PrivateOpts = proplists:get_value(key_cb_private, ConnectOptions, []),

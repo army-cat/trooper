@@ -1,49 +1,22 @@
-
-
 # Trooper #
 
-Copyright (c) 2016-2021 Altenwald Solutions, S.L.
+Copyright (c) 2016-2025 Altenwald
 
 __Authors:__ "Manuel Rubio ([`manuel@altenwald.com`](mailto:manuel@altenwald.com)).
 
-[![Build Status](https://img.shields.io/travis/army-cat/trooper/master.svg)](https://travis-ci.org/army-cat/trooper)
-[![Codecov](https://img.shields.io/codecov/c/github/army-cat/trooper.svg)](https://codecov.io/gh/army-cat/trooper)
-[![License: LGPL 2.1](https://img.shields.io/github/license/army-cat/trooper.svg)](https://raw.githubusercontent.com/army-cat/trooper/master/COPYING)
 [![Hex](https://img.shields.io/hexpm/v/trooper.svg)](https://hex.pm/packages/trooper)
 
 Trooper is a soldier in charge to go to other machines (via SSH) and follow your commands.
 
+### Requirements
 
-### <a name="Requirements">Requirements</a> ###
+Trooper requires to be run over an Erlang/OTP 24+.
 
-Trooper requires to be run over an Erlang/OTP 19+.
+> #### Don't use DSA for OTP 23+ {: .warning}
+>
+> We found very difficult to put this working. But if you achieve it, please let us know how!
 
-> :warning: **Don't use DSA for OTP 23+**, we found very difficult to put this working. But if you achieve it, please let us know how!
-
-| Erlang Version | Support | Notes |
-|:---|:---:|:---|
-| 23.2 | :heavy_check_mark: | Recommended if you use OTP 23 |
-| 23.1 | :heavy_check_mark: | |
-| 23.0 | :heavy_check_mark: | |
-| 22.3 | :heavy_check_mark: | Recommended if you use OTP 22 |
-| 22.2 | :heavy_check_mark: | |
-| 22.1 | :heavy_check_mark: | |
-| 22.0 | :heavy_check_mark: | |
-| 21.3 | :heavy_check_mark: | Recommended if you use OTP 21 |
-| 21.2 | :heavy_check_mark: | |
-| 21.1 | :heavy_check_mark: | |
-| 21.0 | :heavy_check_mark: | |
-| 20.3 | :heavy_check_mark: | Recommended if you use OTP 20 |
-| 20.2 | :heavy_check_mark: | |
-| 20.1 | :heavy_check_mark: | |
-| 20.0 | :heavy_check_mark: | |
-| 19.3 | :heavy_check_mark: | Recommended if you use OTP 19 |
-| 19.2 | :heavy_check_mark: | |
-| 19.1 | :heavy_check_mark: | |
-| 19.0 | :heavy_check_mark: | |
-
-
-### <a name="Example">Example</a> ###
+### Example
 
 ```erlang
 1> {ok, File} = file:read_file("/home/trooper/.ssh/id_rsa").
@@ -65,17 +38,3 @@ ok
 You can use for the options whatever from [ssh:connect/3](http://erlang.org/doc/man/ssh.md#connect-3) options.
 
 Enjoy!
-
-
-## Modules ##
-
-
-<table width="100%" border="0" summary="list of modules">
-<tr><td><a href="http://github.com/army-cat/trooper/blob/master/doc/trooper_app.md" class="module">trooper_app</a></td></tr>
-<tr><td><a href="http://github.com/army-cat/trooper/blob/master/doc/trooper_keys.md" class="module">trooper_keys</a></td></tr>
-<tr><td><a href="http://github.com/army-cat/trooper/blob/master/doc/trooper_proxy.md" class="module">trooper_proxy</a></td></tr>
-<tr><td><a href="http://github.com/army-cat/trooper/blob/master/doc/trooper_proxy_chain.md" class="module">trooper_proxy_chain</a></td></tr>
-<tr><td><a href="http://github.com/army-cat/trooper/blob/master/doc/trooper_proxy_sup.md" class="module">trooper_proxy_sup</a></td></tr>
-<tr><td><a href="http://github.com/army-cat/trooper/blob/master/doc/trooper_scp.md" class="module">trooper_scp</a></td></tr>
-<tr><td><a href="http://github.com/army-cat/trooper/blob/master/doc/trooper_ssh.md" class="module">trooper_ssh</a></td></tr></table>
-
