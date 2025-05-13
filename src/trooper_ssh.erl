@@ -82,7 +82,9 @@ start(Opts) ->
         {user, proplists:get_value(user, Opts, undefined)},
         {quiet_mode, true},
         {silently_accept_hosts, true},
-        {user_interaction, false}
+        {user_interaction, false},
+        {pref_public_key_algs, proplists:get_value(pref_public_key_algs, Opts, default_pubkey_algs())},
+        {preferred_algorithms, proplists:get_value(preferred_algorithms, Opts, default_algorithms())}
     ] ++
         add_opt(password, Opts) ++
         add_opt(rsa_pass_phrase, Opts) ++
@@ -100,6 +102,18 @@ start(Opts) ->
         {error, Reason} ->
             {error, Reason}
     end.
+
+
+default_pubkey_algs() ->
+    Algs = ssh:default_algorithms(),
+    PubKey = proplists:get_value(public_key, Algs, []),
+    ['ssh-rsa'|PubKey].
+
+
+default_algorithms() ->
+    Algs = ssh:default_algorithms(),
+    PubKey = proplists:get_value(public_key, Algs, []),
+    [{public_key, ['ssh-rsa'|PubKey]}|proplists:delete(public_key, Algs)].
 
 
 -spec start_chan(trooper_ssh()) -> {ok, trooper_ssh_chan()}.
