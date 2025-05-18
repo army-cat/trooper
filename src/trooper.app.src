@@ -13,7 +13,7 @@
     ]},
     {mod, {trooper_app, []}},
     {env, []},
-    {licenses, ["LGPL 2.1"]},
+    {licenses, ["LGPL-2.1-only"]},
     {links,[
         {"Github","https://github.com/altenwald/trooper"}
     ]}
