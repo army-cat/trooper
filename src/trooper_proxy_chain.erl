@@ -13,7 +13,6 @@
 %% @end
 -module(trooper_proxy_chain).
 -author('manuel@altenwald.com').
--compile([warnings_as_errors]).
 
 -behaviour(supervisor_bridge).
 

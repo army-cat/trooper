@@ -6,7 +6,6 @@
 %% @end
 -module(trooper_scp).
 -author('manuel@altenwald.com').
--compile([warnings_as_errors]).
 
 -export([
     list_dir/2,

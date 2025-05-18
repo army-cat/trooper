@@ -1,5 +1,5 @@
 %% @doc Trooper SSH is in charge of connect to the remote hosts using the SSH
-%%      application. It lets to tropper to execute commands on those remote
+%%      application. It lets to trooper to execute commands on those remote
 %%      servers and returns the output.
 %%
 %%      You have two ways to run commands: simple and long polling.
@@ -9,8 +9,7 @@
 %%
 %%      <pre lang="erlang"><![CDATA[
 %%      trooper_ssh:exec(Trooper, "uname -r").
-%%      % {ok, 0, <<"3.16.0-0.bpo.4-amd64">>}
-%%      ]]></pre>
+%%      % {ok, 0, <<"3.16.0-0.bpo.4-amd64">>}]]></pre>
 %%
 %%      Long polling means you send a command (i.e. ping -c 15 127.0.0.1)
 %%      and your process starts to receive all of the output of that remote
@@ -20,18 +19,17 @@
 %%      trooper_ssh:exec_long_polling(Trooper, "ping -c 15 127.0.0.1").
 %%      % ok
 %%      flush().
-%%      % {continue, <<"PING 127.0.0.1 (127.0.0.1) 56(84) "...>>}
-%%      ]]></pre>
+%%      % {continue, <<"PING 127.0.0.1 (127.0.0.1) 56(84) "...>>}]]></pre>
 %%
 %%      Until you receive the `closed' event.
 %% @end
 -module(trooper_ssh).
 -author('manuel@altenwald.com').
--compile([warnings_as_errors]).
 
 -define(CONNECT_TIMEOUT, 60000).
 -define(CHANNEL_TIMEOUT, 60000).
 -define(COMMAND_TIMEOUT, 60000).
+-define(PTTY_TIMEOUT, 60000).
 
 -export([
     start/1,
@@ -97,7 +95,9 @@ start(Opts) ->
         {ok, PID} when is_pid(PID) ->
             {ok, #trooper_ssh{
                 pid = PID,
-                opts = ConnOpts ++ OtherOpts
+                opts = ConnOpts ++ OtherOpts  ++
+                    add_opt(ptty_allow, Opts) ++
+                    add_opt(ptty_opts, Opts)
             }};
         {error, Reason} ->
             {error, Reason}
@@ -226,10 +226,17 @@ exec(TrooperSSH, CommandFormat, Args) ->
 %% @doc Executes the command in background setting the current process as the
 %%      receiver for the incoming information from the SSH connection.
 %% @end
-exec_long_polling(#trooper_ssh{pid = Conn}, Command) ->
+exec_long_polling(#trooper_ssh{pid = Conn, opts = Opts}, Command) ->
     Parent = self(),
     spawn_link(fun() ->
         {ok, Chan} = ssh_connection:session_channel(Conn, ?CHANNEL_TIMEOUT),
+        case proplists:get_value(ptty_allow, Opts, false) of
+            true ->
+                PtyOpts = proplists:get_value(ptty_opts, Opts, []),
+                ssh_connection:ptty_alloc(Conn, Chan, PtyOpts, ?PTTY_TIMEOUT);
+            false ->
+                ok
+        end,
         case ssh_connection:exec(Conn, Chan, Command, ?COMMAND_TIMEOUT) of
             success ->
                 get_and_send_all_info(Parent, Conn, Chan);

@@ -8,20 +8,18 @@
 %%
 %%      We can configure this in different ways:
 %%
-%%      ```erlang
+%%      <pre lang="erlang"><![CDATA[
 %%      % config for inline certificate (without password)
 %%      {id_rsa, <<"-----BEGIN RSA PRIVATE KEY-----\nMIIE..."},
 %%      % or from a file
 %%      {id_rsa, {file, "id_rsa"}},
 %%      % and adding a password:
-%%      {rsa_pass_phrase, <<"mypass">>},
-%%      ```
+%%      {rsa_pass_phrase, <<"mypass">>},]]></pre>
 %%
 %%      You can do that with `rsa' and `ecdsa' algorithms.
 %% @end
 -module(trooper_keys).
 -author('manuel@altenwald.com').
--compile([warnings_as_errors]).
 
 -behaviour(ssh_client_key_api).
 

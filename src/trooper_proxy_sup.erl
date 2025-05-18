@@ -11,7 +11,6 @@
 %% @end
 -module(trooper_proxy_sup).
 -author('manuel@altenwald.com').
--compile([warnings_as_errors]).
 
 -behaviour(supervisor).
 

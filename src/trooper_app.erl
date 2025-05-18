@@ -4,7 +4,6 @@
 %% @end
 -module(trooper_app).
 -author('manuel@altenwald.com').
--compile([warnings_as_errors]).
 
 -behaviour(application).
 -behaviour(supervisor).

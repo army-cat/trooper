@@ -3,8 +3,7 @@
 %%
 %%      <pre lang="erlang">
 %%      [[{host, "server1"}, {user, "user1"}, {password, "pass1"}],
-%%       [{host, "server2"}, {user, "user2"}, {password, "pass2"}]]
-%%      </pre>
+%%       [{host, "server2"}, {user, "user2"}, {password, "pass2"}]]</pre>
 %%
 %%      The proxy creates the connection to the first server and a server
 %%      listening in a random port and running in a long polling way a proxy
@@ -13,8 +12,7 @@
 %%
 %%      <pre lang="erlang">
 %%      [[{host, "server1"}, {user, "user1"}, {password, "pass1"},
-%%        {proxy, "nc ~s ~b"}], ...]
-%%      </pre>
+%%        {proxy, "nc ~s ~b"}], ...]</pre>
 %%
 %%      Keep in mind it should receive two params, the first one is the name
 %%      of the server (~s) where it should to connect and the second one is the
@@ -31,7 +29,6 @@
 %% @end
 -module(trooper_proxy).
 -author('manuel@altenwald.com').
--compile([warnings_as_errors]).
 
 -export([
     start/1,
