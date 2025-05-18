@@ -21,246 +21,217 @@ stop_daemon(Sshd) ->
     ok = ssh:stop(),
     ok.
 
-transaction_test_() ->
-    {timeout, 10, ?_test(begin
-        {ok, Sshd, Port} = start_daemon(),
-        Opts = [{host, "localhost"},
+transaction_test() ->
+    {ok, Sshd, Port} = start_daemon(),
+    Opts = [{host, "localhost"},
+            {port, Port},
+            {user, ?USERNAME},
+            {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
+    ok = trooper_ssh:transaction(Opts, fun(Trooper) ->
+        {ok,0,<<"3.141592653589793", _/binary>>} =
+            trooper_ssh:exec(Trooper, "math:pi()."),
+        ok
+    end),
+    ok = stop_daemon(Sshd),
+    ok.
+
+transaction_error_test() ->
+    {ok, Sshd, Port} = start_daemon(),
+    WOpts = [{host, "nxdomain_error"},
                 {port, Port},
                 {user, ?USERNAME},
                 {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
-        ok = trooper_ssh:transaction(Opts, fun(Trooper) ->
-            {ok,0,<<"3.141592653589793", _/binary>>} =
-                trooper_ssh:exec(Trooper, "math:pi()."),
+    {error, nxdomain} = trooper_ssh:transaction(WOpts, fun(_) -> ok end),
+    Opts = [{host, "localhost"},
+            {port, Port},
+            {user, ?USERNAME},
+            {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
+    ?assertException(throw, error, trooper_ssh:transaction(Opts, fun(_Trooper) ->
+        throw(error)
+    end)),
+    ok = stop_daemon(Sshd),
+    ok.
+
+rsa_user_connect_test() ->
+    {ok, Sshd, Port} = start_daemon(),
+    Opts = [{host, "localhost"},
+            {port, Port},
+            {user, ?USERNAME},
+            {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
+    {ok, Trooper} = trooper_ssh:start(Opts),
+    {ok,0,<<"3.141592653589793", _/binary>>} =
+        trooper_ssh:exec(Trooper, "math:pi()."),
+    ok = trooper_ssh:stop(Trooper),
+    ok = stop_daemon(Sshd),
+    ok.
+
+rsa_user_with_args_connect_test() ->
+    {ok, Sshd, Port} = start_daemon(),
+    Opts = [{host, "localhost"},
+            {port, Port},
+            {user, ?USERNAME},
+            {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
+    {ok, Trooper} = trooper_ssh:start(Opts),
+    {ok,0,<<"3.141592653589793", _/binary>>} =
+        trooper_ssh:exec(Trooper, "math:~p().", [pi]),
+    ok = trooper_ssh:stop(Trooper),
+    ok = stop_daemon(Sshd),
+    ok.
+
+rsa_direct_user_connect_test() ->
+    {ok, Sshd, Port} = start_daemon(),
+    {ok, Cert} = file:read_file(?BASE_PATH "/user/id_rsa"),
+    Opts = [{host, "localhost"},
+            {port, Port},
+            {user, ?USERNAME},
+            {id_rsa, Cert}],
+    {ok, Trooper} = trooper_ssh:start(Opts),
+    {ok,0,<<"3.141592653589793", _/binary>>} =
+        trooper_ssh:exec(Trooper, "math:pi()."),
+    ok = trooper_ssh:stop(Trooper),
+    ok = stop_daemon(Sshd),
+    ok.
+
+rsa_direct_error_user_connect_test() ->
+    {ok, Sshd, Port} = start_daemon(),
+    Opts = [{host, "localhost"},
+            {port, Port},
+            {user, ?USERNAME},
+            {id_rsa, aaa}],
+    {error,_} = trooper_ssh:start(Opts),
+    ok = stop_daemon(Sshd),
+    ok.
+
+rsa_protected_user_connect_test() ->
+    {ok, Sshd, Port} = start_daemon(),
+    Opts = [{host, "localhost"},
+            {port, Port},
+            {user, ?USERNAME},
+            {id_rsa, {file, ?BASE_PATH "/user/id_rsa_protected"}},
+            {rsa_pass_phrase, "secret"}],
+    {ok, Trooper} = trooper_ssh:start(Opts),
+    {ok,0,<<"3.141592653589793", _/binary>>} =
+        trooper_ssh:exec(Trooper, "math:pi()."),
+    ok = trooper_ssh:stop(Trooper),
+    ok = stop_daemon(Sshd).
+
+ecdsa_user_connect_test() ->
+    {ok, Sshd, Port} = start_daemon(),
+    Opts = [{host, "localhost"},
+            {port, Port},
+            {user, ?USERNAME},
+            {id_ecdsa, {file, ?BASE_PATH "/user/id_ecdsa"}}],
+    {ok, Trooper} = trooper_ssh:start(Opts),
+    {ok,0,<<"3.141592653589793", _/binary>>} =
+        trooper_ssh:exec(Trooper, "math:pi()."),
+    ok = trooper_ssh:stop(Trooper),
+    ok = stop_daemon(Sshd),
+    ok.
+
+ecdsa_protected_user_connect_test() ->
+    {ok, Sshd, Port} = start_daemon(),
+    Opts = [{host, "localhost"},
+            {port, Port},
+            {user, ?USERNAME},
+            {id_ecdsa, {file, ?BASE_PATH "/user/id_ecdsa_protected"}},
+            {ecdsa_pass_phrase, "secret"}],
+    {ok, Trooper} = trooper_ssh:start(Opts),
+    {ok,0,<<"3.141592653589793", _/binary>>} =
+        trooper_ssh:exec(Trooper, "math:pi()."),
+    ok = trooper_ssh:stop(Trooper),
+    ok = stop_daemon(Sshd).
+
+rsa_protected_error_user_connect_test() ->
+    {ok, Sshd, Port} = start_daemon(),
+    Opts = [{host, "localhost"},
+            {port, Port},
+            {user, ?USERNAME},
+            {id_rsa, {file, ?BASE_PATH "/user/id_rsa_protected"}}],
+    {error,_} = trooper_ssh:start(Opts),
+    ok = stop_daemon(Sshd).
+
+file_error_user_connect_test() ->
+    {ok, Sshd, Port} = start_daemon(),
+    Opts = [{host, "localhost"},
+            {port, Port},
+            {user, ?USERNAME},
+            {id_rsa, {file, ?BASE_PATH "/user/no_file"}}],
+    {error,_} = trooper_ssh:start(Opts),
+    ok = stop_daemon(Sshd).
+
+long_polling_exec_test() ->
+    {ok, Sshd, Port} = start_daemon(),
+    Opts = [{host, "localhost"},
+            {port, Port},
+            {user, ?USERNAME},
+            {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
+    {ok, Trooper} = trooper_ssh:start(Opts),
+    Cmd = "io:format(\"~b~n\", [",
+    PID = trooper_ssh:exec_long_polling(Trooper, Cmd ++ "1])."),
+    ?assert(is_pid(PID)),
+    case list_to_integer(erlang:system_info(otp_release)) of
+        N when N >= 22 ->
+            %% only from OTP 22 we get the output from the
+            %% command, in the rest, we get only the return
+            %% of the function.
+            {continue, <<"1", _/binary>>} = recv();
+        _ ->
             ok
-        end),
-        ok = stop_daemon(Sshd),
-        ok
-    end)}.
+    end,
+    {continue, <<"ok", _/binary>>} = recv(),
+    {exit_status, 0} = recv(),
+    closed = recv(),
+    ?assertNot(is_process_alive(PID)),
+    ok = trooper_ssh:stop(Trooper),
+    ok = stop_daemon(Sshd),
+    ok.
 
-transaction_error_test_() ->
-    {timeout, 10, ?_test(begin
-        {ok, Sshd, Port} = start_daemon(),
-        WOpts = [{host, "nxdomain_error"},
-                 {port, Port},
-                 {user, ?USERNAME},
-                 {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
-        {error, nxdomain} = trooper_ssh:transaction(WOpts, fun(_) -> ok end),
-        Opts = [{host, "localhost"},
-                {port, Port},
-                {user, ?USERNAME},
-                {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
-        ?assertException(throw, error, trooper_ssh:transaction(Opts, fun(_Trooper) ->
-            throw(error)
-        end)),
-        ok = stop_daemon(Sshd),
-        ok
-    end)}.
+long_polling_interactive_exec_test() ->
+    {ok, Sshd, Port} = start_daemon(),
+    Opts = [{host, "localhost"},
+            {port, Port},
+            {user, ?USERNAME},
+            {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
+    {ok, Trooper} = trooper_ssh:start(Opts),
+    Cmd = "io:get_line(\"give me data: \").",
+    PID = trooper_ssh:exec_long_polling(Trooper, Cmd),
+    ?assert(is_pid(PID)),
+    PID ! {send, <<"1234\n">>},
+    ?assertEqual({continue, <<"give me data: ">>}, recv()),
+    ?assertEqual({continue, <<"1234\n">>}, recv()),
+    ?assertEqual({exit_status, 0}, recv()),
+    ?assertEqual(closed, recv()),
+    ?assertNot(is_process_alive(PID)),
+    ok = trooper_ssh:stop(Trooper),
+    ok = stop_daemon(Sshd),
+    ok.
 
-rsa_user_connect_test_() ->
-    {timeout, 10, ?_test(begin
-        {ok, Sshd, Port} = start_daemon(),
-        Opts = [{host, "localhost"},
-                {port, Port},
-                {user, ?USERNAME},
-                {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
-        {ok, Trooper} = trooper_ssh:start(Opts),
-        {ok,0,<<"3.141592653589793", _/binary>>} =
-            trooper_ssh:exec(Trooper, "math:pi()."),
-        ok = trooper_ssh:stop(Trooper),
-        ok = stop_daemon(Sshd),
-        ok
-    end)}.
-
-rsa_user_with_args_connect_test_() ->
-    {timeout, 10, ?_test(begin
-        {ok, Sshd, Port} = start_daemon(),
-        Opts = [{host, "localhost"},
-                {port, Port},
-                {user, ?USERNAME},
-                {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
-        {ok, Trooper} = trooper_ssh:start(Opts),
-        {ok,0,<<"3.141592653589793", _/binary>>} =
-            trooper_ssh:exec(Trooper, "math:~p().", [pi]),
-        ok = trooper_ssh:stop(Trooper),
-        ok = stop_daemon(Sshd),
-        ok
-    end)}.
-
-rsa_direct_user_connect_test_() ->
-    {timeout, 10, ?_test(begin
-        {ok, Sshd, Port} = start_daemon(),
-        {ok, Cert} = file:read_file(?BASE_PATH "/user/id_rsa"),
-        Opts = [{host, "localhost"},
-                {port, Port},
-                {user, ?USERNAME},
-                {id_rsa, Cert}],
-        {ok, Trooper} = trooper_ssh:start(Opts),
-        {ok,0,<<"3.141592653589793", _/binary>>} =
-            trooper_ssh:exec(Trooper, "math:pi()."),
-        ok = trooper_ssh:stop(Trooper),
-        ok = stop_daemon(Sshd),
-        ok
-    end)}.
-
-rsa_direct_error_user_connect_test_() ->
-    {timeout, 10, ?_test(begin
-        {ok, Sshd, Port} = start_daemon(),
-        Opts = [{host, "localhost"},
-                {port, Port},
-                {user, ?USERNAME},
-                {id_rsa, aaa}],
-        {error,_} = trooper_ssh:start(Opts),
-        ok = stop_daemon(Sshd),
-        ok
-    end)}.
-
-rsa_protected_user_connect_test_() ->
-    {timeout, 10, fun() ->
-        {ok, Sshd, Port} = start_daemon(),
-        Opts = [{host, "localhost"},
-                {port, Port},
-                {user, ?USERNAME},
-                {id_rsa, {file, ?BASE_PATH "/user/id_rsa_protected"}},
-                {rsa_pass_phrase, "secret"}],
-        {ok, Trooper} = trooper_ssh:start(Opts),
-        {ok,0,<<"3.141592653589793", _/binary>>} =
-            trooper_ssh:exec(Trooper, "math:pi()."),
-        ok = trooper_ssh:stop(Trooper),
-        ok = stop_daemon(Sshd)
-    end}.
-
-ecdsa_user_connect_test_() ->
-    {timeout, 10, ?_test(begin
-        {ok, Sshd, Port} = start_daemon(),
-        Opts = [{host, "localhost"},
-                {port, Port},
-                {user, ?USERNAME},
-                {id_ecdsa, {file, ?BASE_PATH "/user/id_ecdsa"}}],
-        {ok, Trooper} = trooper_ssh:start(Opts),
-        {ok,0,<<"3.141592653589793", _/binary>>} =
-            trooper_ssh:exec(Trooper, "math:pi()."),
-        ok = trooper_ssh:stop(Trooper),
-        ok = stop_daemon(Sshd),
-        ok
-    end)}.
-
-ecdsa_protected_user_connect_test_() ->
-    {timeout, 10, fun() ->
-        {ok, Sshd, Port} = start_daemon(),
-        Opts = [{host, "localhost"},
-                {port, Port},
-                {user, ?USERNAME},
-                {id_ecdsa, {file, ?BASE_PATH "/user/id_ecdsa_protected"}},
-                {ecdsa_pass_phrase, "secret"}],
-        {ok, Trooper} = trooper_ssh:start(Opts),
-        {ok,0,<<"3.141592653589793", _/binary>>} =
-            trooper_ssh:exec(Trooper, "math:pi()."),
-        ok = trooper_ssh:stop(Trooper),
-        ok = stop_daemon(Sshd)
-    end}.
-
-rsa_protected_error_user_connect_test_() ->
-    {timeout, 10, ?_test(begin
-        {ok, Sshd, Port} = start_daemon(),
-        Opts = [{host, "localhost"},
-                {port, Port},
-                {user, ?USERNAME},
-                {id_rsa, {file, ?BASE_PATH "/user/id_rsa_protected"}}],
-        {error,_} = trooper_ssh:start(Opts),
-        ok = stop_daemon(Sshd)
-    end)}.
-
-file_error_user_connect_test_() ->
-    {timeout, 10, ?_test(begin
-        {ok, Sshd, Port} = start_daemon(),
-        Opts = [{host, "localhost"},
-                {port, Port},
-                {user, ?USERNAME},
-                {id_rsa, {file, ?BASE_PATH "/user/no_file"}}],
-        {error,_} = trooper_ssh:start(Opts),
-        ok = stop_daemon(Sshd)
-    end)}.
-
-long_polling_exec_test_() ->
-    {timeout, 10, ?_test(begin
-        {ok, Sshd, Port} = start_daemon(),
-        Opts = [{host, "localhost"},
-                {port, Port},
-                {user, ?USERNAME},
-                {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
-        {ok, Trooper} = trooper_ssh:start(Opts),
-        Cmd = "io:format(\"~b~n\", [",
-        PID = trooper_ssh:exec_long_polling(Trooper, Cmd ++ "1])."),
-        ?assert(is_pid(PID)),
-        case list_to_integer(erlang:system_info(otp_release)) of
-            N when N >= 22 ->
-                %% only from OTP 22 we get the output from the
-                %% command, in the rest, we get only the return
-                %% of the function.
-                {continue, <<"1", _/binary>>} = recv();
-            _ ->
-                ok
-        end,
-        {continue, <<"ok", _/binary>>} = recv(),
-        {exit_status, 0} = recv(),
-        closed = recv(),
-        ?assertNot(is_process_alive(PID)),
-        ok = trooper_ssh:stop(Trooper),
-        ok = stop_daemon(Sshd),
-        ok
-    end)}.
-
-%% FIXME: trying to figure out how to make this working :'(
-% long_polling_interactive_exec_test_() ->
-%     {timeout, 10, ?_test(begin
-%         {ok, Sshd, Port} = start_daemon(),
-%         Opts = [{host, "localhost"},
-%                 {port, Port},
-%                 {user, ?USERNAME},
-%                 {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
-%         {ok, Trooper} = trooper_ssh:start(Opts),
-%         Cmd = "io:get_line(\"give me data: \").",
-%         PID = trooper_ssh:exec_long_polling(Trooper, Cmd),
-%         ?assert(is_pid(PID)),
-%         PID ! {send, <<"1234\n">>},
-%         {continue, <<"give me data: ">>} = recv(),
-%         {continue, <<"1234\n">>} = recv(),
-%         {exit_status, 0} = recv(),
-%         closed = recv(),
-%         ?assertNot(is_process_alive(PID)),
-%         ok = trooper_ssh:stop(Trooper),
-%         ok = stop_daemon(Sshd),
-%         ok
-%     end)}.
-
-long_polling_exec_with_args_test_() ->
-    {timeout, 10, ?_test(begin
-        {ok, Sshd, Port} = start_daemon(),
-        Opts = [{host, "localhost"},
-                {port, Port},
-                {user, ?USERNAME},
-                {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
-        {ok, Trooper} = trooper_ssh:start(Opts),
-        Cmd = "io:format(\"~~b~~n\", [~b]).",
-        PID = trooper_ssh:exec_long_polling(Trooper, Cmd, [1]),
-        ?assert(is_pid(PID)),
-        case list_to_integer(erlang:system_info(otp_release)) of
-            N when N >= 22 ->
-                %% only from OTP 22 we get the output from the
-                %% command, in the rest, we get only the return
-                %% of the function.
-                {continue, <<"1", _/binary>>} = recv();
-            _ ->
-                ok
-        end,
-        {continue, <<"ok", _/binary>>} = recv(),
-        {exit_status, 0} = recv(),
-        closed = recv(),
-        ?assertNot(is_process_alive(PID)),
-        ok = trooper_ssh:stop(Trooper),
-        ok = stop_daemon(Sshd),
-        ok
-    end)}.
+long_polling_exec_with_args_test() ->
+    {ok, Sshd, Port} = start_daemon(),
+    Opts = [{host, "localhost"},
+            {port, Port},
+            {user, ?USERNAME},
+            {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}}],
+    {ok, Trooper} = trooper_ssh:start(Opts),
+    Cmd = "io:format(\"~~b~~n\", [~b]).",
+    PID = trooper_ssh:exec_long_polling(Trooper, Cmd, [1]),
+    ?assert(is_pid(PID)),
+    case list_to_integer(erlang:system_info(otp_release)) of
+        N when N >= 22 ->
+            %% only from OTP 22 we get the output from the
+            %% command, in the rest, we get only the return
+            %% of the function.
+            {continue, <<"1", _/binary>>} = recv();
+        _ ->
+            ok
+    end,
+    {continue, <<"ok", _/binary>>} = recv(),
+    {exit_status, 0} = recv(),
+    closed = recv(),
+    ?assertNot(is_process_alive(PID)),
+    ok = trooper_ssh:stop(Trooper),
+    ok = stop_daemon(Sshd),
+    ok.
 
 recv() ->
     receive
