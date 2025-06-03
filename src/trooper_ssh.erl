@@ -41,6 +41,7 @@
     stop/1,
     exec/2,
     exec/3,
+    shell/1,
     exec_long_polling/2,
     exec_long_polling/3
 ]).
@@ -220,6 +221,35 @@ exec_long_polling(TrooperSSH, CommandFormat, Args) ->
 exec(TrooperSSH, CommandFormat, Args) ->
     Command = io_lib:format(CommandFormat, Args),
     exec(TrooperSSH, Command).
+
+
+-spec shell(trooper_ssh()) -> pid().
+%% @doc Executes a remote shell like a background command but opening a shell
+%%      instead.
+%% @end
+shell(#trooper_ssh{pid = Conn, opts = Opts}) ->
+    Parent = self(),
+    spawn_link(fun() ->
+        {ok, Chan} = ssh_connection:session_channel(Conn, ?CHANNEL_TIMEOUT),
+        case proplists:get_value(ptty_allow, Opts, true) of
+            true ->
+                DefaultPtyOpts = [
+                    {term, "vt100"},
+                    {width, 80},
+                    {height, 24}
+                ],
+                PtyOpts = proplists:get_value(ptty_opts, Opts, DefaultPtyOpts),
+                ssh_connection:ptty_alloc(Conn, Chan, PtyOpts, ?PTTY_TIMEOUT);
+            false ->
+                ok
+        end,
+        case ssh_connection:shell(Conn, Chan) of
+            ok ->
+                get_and_send_all_info(Parent, Conn, Chan);
+            Error ->
+                Parent ! Error
+        end
+    end).
 
 
 -spec exec_long_polling(trooper_ssh(), Command :: string()) -> pid().

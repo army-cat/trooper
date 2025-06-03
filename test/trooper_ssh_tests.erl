@@ -159,6 +159,41 @@ file_error_user_connect_test() ->
     {error,_} = trooper_ssh:start(Opts),
     ok = stop_daemon(Sshd).
 
+-define(assertRegex(Pattern, Text), ?assertEqual(match, re:run(element(2, Text), Pattern, [{capture, none}]))).
+
+shell_test() ->
+    {ok, Sshd, Port} = start_daemon(),
+    Opts = [{host, "localhost"},
+            {port, Port},
+            {user, ?USERNAME},
+            {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}},
+            {ptty_allow, true},
+            {ptty_opts, [{term, "vt100"}]}],
+    {ok, Trooper} = trooper_ssh:start(Opts),
+    PID = trooper_ssh:shell(Trooper),
+    ?assert(is_pid(PID)),
+    ?assertMatch({continue, <<"Eshell ", _/binary>>}, recv()),
+    ?assertEqual({continue, <<"1> ">>}, recv()),
+    
+    PID ! {send, <<"io:format(\"hello world!\").\n">>},
+    ?assertRegex("io:format\\(\"hello world!\"\\)\\.", recv()),
+    ?assertRegex("1> io:format\\(\"hello world!\"\\)\\.", recv()),
+    ?assertEqual({continue, <<"hello world!">>}, recv()),
+    ?assertEqual({continue, <<"ok">>}, recv()),
+    ?assertEqual({continue, <<"\r\n">>}, recv()),
+    ?assertEqual({continue, <<"2> ">>}, recv()),
+
+    PID ! {send, <<"exit().\n">>},
+    ?assertRegex("exit\\(\\)\\.", recv()),
+    ?assertRegex("2> exit\\(\\)\\.", recv()),
+
+    ?assertEqual({exit_status, 0}, recv()),
+    ?assertEqual(closed, recv()),
+    ?assertNot(is_process_alive(PID)),
+    ok = trooper_ssh:stop(Trooper),
+    ok = stop_daemon(Sshd),
+    ok.
+
 long_polling_exec_test() ->
     {ok, Sshd, Port} = start_daemon(),
     Opts = [{host, "localhost"},
