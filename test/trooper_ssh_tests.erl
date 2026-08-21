@@ -216,7 +216,7 @@ long_polling_exec_test() ->
     {continue, <<"ok", _/binary>>} = recv(),
     {exit_status, 0} = recv(),
     closed = recv(),
-    ?assertNot(is_process_alive(PID)),
+    wait_dead(PID),
     ok = trooper_ssh:stop(Trooper),
     ok = stop_daemon(Sshd),
     ok.
@@ -236,7 +236,7 @@ long_polling_interactive_exec_test() ->
     ?assertEqual({continue, <<"1234\n">>}, recv()),
     ?assertEqual({exit_status, 0}, recv()),
     ?assertEqual(closed, recv()),
-    ?assertNot(is_process_alive(PID)),
+    wait_dead(PID),
     ok = trooper_ssh:stop(Trooper),
     ok = stop_daemon(Sshd),
     ok.
@@ -263,10 +263,63 @@ long_polling_exec_with_args_test() ->
     {continue, <<"ok", _/binary>>} = recv(),
     {exit_status, 0} = recv(),
     closed = recv(),
-    ?assertNot(is_process_alive(PID)),
+    wait_dead(PID),
     ok = trooper_ssh:stop(Trooper),
     ok = stop_daemon(Sshd),
     ok.
+
+channel_and_link_test() ->
+    {ok, Sshd, Port} = start_daemon(),
+    Opts = [{host, "localhost"},
+            {port, Port},
+            {user, ?USERNAME},
+            {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}},
+            {ecdsa_pass_phrase, "test_pass"}],
+    {ok, Trooper} = trooper_ssh:start_link(Opts),
+    ?assert(is_pid(trooper_ssh:get_pid(Trooper))),
+
+    %% Test start_chan & stop_chan
+    {ok, Chan} = trooper_ssh:start_chan(Trooper),
+    {ok, 0, <<"3.14", _/binary>>} = trooper_ssh:exec(Chan, "math:pi()."),
+    ok = trooper_ssh:stop_chan(Chan),
+
+    %% Test exec with format args
+    {ok, 0, <<"sample", _/binary>>} = trooper_ssh:exec(Trooper, "\"~s\".", ["sample"]),
+
+    ok = trooper_ssh:stop(Trooper),
+    ok = stop_daemon(Sshd),
+    ok.
+
+ptty_test() ->
+    {ok, Sshd, Port} = start_daemon(),
+    Opts = [{host, "localhost"},
+            {port, Port},
+            {user, ?USERNAME},
+            {id_rsa, {file, ?BASE_PATH "/user/id_rsa"}},
+            {ptty_allow, true},
+            {ptty_opts, []}],
+    {ok, Trooper} = trooper_ssh:start(Opts),
+    PID = trooper_ssh:exec_long_polling(Trooper, "math:pi()."),
+    ?assert(is_pid(PID)),
+    {continue, <<"3.14", _/binary>>} = recv(),
+    {exit_status, 0} = recv(),
+    closed = recv(),
+    wait_dead(PID),
+    ok = trooper_ssh:stop(Trooper),
+    ok = stop_daemon(Sshd),
+    ok.
+
+start_link_error_test() ->
+    {error, nxdomain} = trooper_ssh:start_link([{host, "unreachable_domain_error"}, {user, "user"}]),
+    ok.
+
+wait_dead(PID) ->
+    MRef = monitor(process, PID),
+    receive
+        {'DOWN', MRef, process, PID, _} -> ok
+    after 1000 ->
+        error({process_still_alive, PID})
+    end.
 
 recv() ->
     receive
