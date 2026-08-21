@@ -30,24 +30,39 @@ start_link(From, Config, Cmd, Host, Port) ->
 
 %% @private
 init([From, Config]) ->
-    {ok, Trooper} = trooper_ssh:start(Config),
-    From ! {trooper, Trooper},
-    {ok, trooper_ssh:get_pid(Trooper), undefined};
+    case trooper_ssh:start(Config) of
+        {ok, Trooper} ->
+            From ! {trooper, Trooper},
+            {ok, trooper_ssh:get_pid(Trooper), Trooper};
+        {error, _} = Error ->
+            {error, Error}
+    end;
 
 %% @private
 init([From, Config, Cmd, Host, Port]) ->
-    {ok, Trooper} = trooper_ssh:start_link(Config),
-    {ok, spawn_link(fun() ->
-        PID = trooper_ssh:exec_long_polling(Trooper, Cmd, [Host, Port]),
-        {ok, LSocket} = gen_tcp:listen(0, [binary, {active, true}]),
-        {ok, LocalPort} = inet:port(LSocket),
-        From ! {port, LocalPort},
-        {ok, Socket} = gen_tcp:accept(LSocket),
-        processing(PID, Socket),
-        gen_tcp:close(LSocket)
-    end), Trooper}.
+    case trooper_ssh:start_link(Config) of
+        {ok, Trooper} ->
+            Pid = spawn_link(fun() ->
+                PID = trooper_ssh:exec_long_polling(Trooper, Cmd, [Host, Port]),
+                {ok, LSocket} = gen_tcp:listen(0, [binary, {active, true}]),
+                {ok, LocalPort} = inet:port(LSocket),
+                From ! {port, LocalPort},
+                case gen_tcp:accept(LSocket, ?COMMAND_TIMEOUT) of
+                    {ok, Socket} ->
+                        processing(PID, Socket);
+                    _ ->
+                        ok
+                end,
+                gen_tcp:close(LSocket)
+            end),
+            {ok, Pid, Trooper};
+        {error, _} = Error ->
+            {error, Error}
+    end.
 
 %% @private
+terminate(_Reason, undefined) ->
+    ok;
 terminate(_Reason, Trooper) ->
     trooper_ssh:stop(Trooper).
 

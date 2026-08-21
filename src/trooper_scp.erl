@@ -24,7 +24,7 @@
 ]).
 
 -record(file_handler, {
-    trooper :: trooper_ssh:trooper_ssh(),
+    channel :: pid(),
     handler :: term()
 }).
 
@@ -32,7 +32,7 @@
 
 -opaque file_handler() :: #file_handler{}.
 
--type reason() :: atom().
+-type reason() :: term().
 
 channel(Trooper, Run) ->
     case ssh_sftp:start_channel(trooper_ssh:get_pid(Trooper)) of
@@ -96,26 +96,39 @@ write_file(Trooper, Name, Content) ->
 
 -type mode() :: [read | write | append | binary | raw].
 
--spec open(file_handler(), Name :: string(), Mode :: mode()) ->
+-spec open(trooper_ssh:trooper_ssh(), Name :: string(), Mode :: mode()) ->
       {ok, file_handler()} | {error, reason()}.
 %%@doc Opens a remote file using a handler to let use read and write.
 %%     Depending on the mode in use.
-open(#file_handler{trooper = Trooper, handler = Handler}, Name, Mode) ->
-    channel(Trooper, fun(PID) -> ssh_sftp:open(PID, Handler, Name, Mode) end).
+open(Trooper, Name, Mode) ->
+    case ssh_sftp:start_channel(trooper_ssh:get_pid(Trooper)) of
+        {ok, ChannelPid} ->
+            case ssh_sftp:open(ChannelPid, Name, Mode) of
+                {ok, Handler} ->
+                    {ok, #file_handler{channel = ChannelPid, handler = Handler}};
+                {error, _} = Error ->
+                    ssh_sftp:stop_channel(ChannelPid),
+                    Error
+            end;
+        {error, _} = Error ->
+            Error
+    end.
 
 -spec close(file_handler()) -> ok | {error, reason()}.
 %%@doc Closes the handler.
-close(#file_handler{trooper = Trooper, handler = Handler}) ->
-    channel(Trooper, fun(PID) -> ssh_sftp:close(PID, Handler) end).
+close(#file_handler{channel = ChannelPid, handler = Handler}) ->
+    Res = ssh_sftp:close(ChannelPid, Handler),
+    ssh_sftp:stop_channel(ChannelPid),
+    Res.
 
 -spec read(file_handler(), Len :: pos_integer()) ->
-      {ok, binary()} | eof | {ok, reason()}.
+      {ok, binary()} | eof | {error, reason()}.
 %%@doc Reads information from an opened remote file.
-read(#file_handler{trooper = Trooper, handler = Handler}, Len) ->
-    channel(Trooper, fun(PID) -> ssh_sftp:read(PID, Handler, Len) end).
+read(#file_handler{channel = ChannelPid, handler = Handler}, Len) ->
+    ssh_sftp:read(ChannelPid, Handler, Len).
 
 -spec write(file_handler(), Data :: iolist()) ->
       ok | {error, reason()}.
 %%@doc Writes information to an opened remote file.
-write(#file_handler{trooper = Trooper, handler = Handler}, Data) ->
-    channel(Trooper, fun(PID) -> ssh_sftp:write(PID, Handler, Data) end).
+write(#file_handler{channel = ChannelPid, handler = Handler}, Data) ->
+    ssh_sftp:write(ChannelPid, Handler, Data).
