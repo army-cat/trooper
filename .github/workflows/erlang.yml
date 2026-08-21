@@ -10,24 +10,32 @@ permissions:
   contents: read
 
 jobs:
-
   build:
-
+    name: Build & Test (OTP ${{ matrix.otp }})
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        otp: ['27.2', '26.2', '25.3']
+
     container:
-      image: erlang:27.2.1
+      image: erlang:${{ matrix.otp }}
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Compile
-      run: make compile
-    - name: Run tests
-      run: make test
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - uses: codecov/codecov-action@v5
-      with:
-        fail_ci_if_error: true
-        files: ./cobertura.xml
-        token: ${{ secrets.CODECOV_TOKEN }}
-        verbose: true # optional (default = false)
+      - name: Compile
+        run: make compile
+
+      - name: Run checks and tests
+        run: make test
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: false
+          files: ./cobertura.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true
