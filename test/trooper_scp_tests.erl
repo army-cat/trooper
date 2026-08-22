@@ -11,7 +11,7 @@ start_daemon() ->
     Opts = [
         {system_dir, ?BASE_PATH "/daemon1"},
         {user_dir, ?BASE_PATH "/user"},
-        {subsystems, [ssh_sftpd:subsystem_spec([{root, ?BASE_PATH}])]}
+        {subsystems, [ssh_sftpd:subsystem_spec([{root, filename:absname(?BASE_PATH)}])]}
     ],
     {ok, Sshd} = ssh:daemon(0, Opts),
     {ok, [{port, Port}|_]} = ssh:daemon_info(Sshd),

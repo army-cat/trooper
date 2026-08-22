@@ -244,7 +244,7 @@ shell(#trooper_ssh{pid = Conn, opts = Opts}) ->
                 ok
         end,
         case ssh_connection:shell(Conn, Chan) of
-            ok ->
+            Status when Status =:= ok; Status =:= success ->
                 get_and_send_all_info(Parent, Conn, Chan);
             Error ->
                 Parent ! Error
@@ -268,10 +268,10 @@ exec_long_polling(#trooper_ssh{pid = Conn, opts = Opts}, Command) ->
                 ok
         end,
         case ssh_connection:exec(Conn, Chan, Command, ?COMMAND_TIMEOUT) of
-            success ->
+            Status when Status =:= success; Status =:= ok ->
                 get_and_send_all_info(Parent, Conn, Chan);
             Error ->
-                Error
+                Parent ! {error, Error}
         end
     end).
 

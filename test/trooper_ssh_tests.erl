@@ -6,11 +6,26 @@
 -define(USERNAME, "manuel.rubio").
 -define(BASE_PATH, "_build/test/lib/trooper/test").
 
+exec_fun(Cmd) ->
+    try
+        {ok, Tokens, _} = erl_scan:string(Cmd),
+        {ok, Exprs} = erl_parse:parse_exprs(Tokens),
+        {value, Val, _} = erl_eval:exprs(Exprs, erl_eval:new_bindings()),
+        case io_lib:printable_unicode_list(Val) of
+            true -> {ok, Val};
+            false -> {ok, io_lib:format("~p", [Val])}
+        end
+    catch
+        _:_ -> {ok, Cmd}
+    end.
+
 start_daemon() ->
     ok = ssh:start(),
     Opts = [
         {system_dir, ?BASE_PATH "/daemon1"},
-        {user_dir, ?BASE_PATH "/user"}
+        {user_dir, ?BASE_PATH "/user"},
+        {shell, {shell, start, []}},
+        {exec, {direct, fun exec_fun/1}}
     ],
     {ok, Sshd} = ssh:daemon(0, Opts),
     {ok, [{port, Port}|_]} = ssh:daemon_info(Sshd),
@@ -189,7 +204,7 @@ shell_test() ->
 
     ?assertEqual({exit_status, 0}, recv()),
     ?assertEqual(closed, recv()),
-    ?assertNot(is_process_alive(PID)),
+    wait_dead(PID),
     ok = trooper_ssh:stop(Trooper),
     ok = stop_daemon(Sshd),
     ok.

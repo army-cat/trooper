@@ -38,17 +38,12 @@
 add_host_key(_HostNames, _Key, _ConnectOptions) -> ok.
 
 
--spec is_host_key(public_key:public_key(), Host :: string(),
-                  ssh:pubkey_alg(),
-                  [proplists:property()]) -> false.
 %% @doc Is a trusted host key? The answer is always no (false) to force to the
 %%      system to use add_host_key/3.
 %% @end
 is_host_key(_Key, _Host, _Algorithm, _ConnectOptions) -> false.
 
 
--spec user_key(ssh:pubkey_alg(), proplists:proplist()) ->
-      {ok, public_key:private_key()} | {error, term()}.
 %% @doc fetch the user public key. It's retrieved from the options.
 user_key(Algorithm, ConnectOptions) ->
     PrivateOpts = proplists:get_value(key_cb_private, ConnectOptions, []),
